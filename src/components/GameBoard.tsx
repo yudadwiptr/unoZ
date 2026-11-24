@@ -23,6 +23,7 @@ import { ColorSymbol, UnoCard, UnoCardBack } from "@/components/UnoCard";
 import { WinnerPodiumModal } from "@/components/WinnerPodiumModal";
 import {
   COLOR_META,
+  MODE_LABEL,
   getCardDisplayName,
   QUICK_EMOTES,
 } from "@/lib/constants";
@@ -177,7 +178,7 @@ export function GameBoard({
             #{gameState.roomCode}
           </span>
           <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-200/70 dark:bg-white/10 text-[11px] font-bold text-slate-600 dark:text-slate-300">
-            {gameState.settings.mode === "chaos" ? "Chaos / Mabar" : "Klasik"}
+            {MODE_LABEL[gameState.settings.mode] ?? "Klasik"}
           </span>
         </div>
 
@@ -221,10 +222,18 @@ export function GameBoard({
                 key={opp.token}
                 className={`relative shrink-0 w-28 sm:w-32 rounded-2xl p-2.5 transition-all duration-300 ${
                   isTurn
-                    ? `glass-panel ring-2 ${activeColorMeta.ring} shadow-lg scale-[1.03]`
+                    ? "glass-panel shadow-lg shadow-amber-500/20 scale-[1.03]"
                     : "glass-panel opacity-90"
                 }`}
               >
+                {/* Running turn loader around the active player's chip */}
+                {isTurn && (
+                  <span
+                    aria-hidden="true"
+                    className="turn-loader pointer-events-none absolute -inset-[3px] rounded-[1.1rem]"
+                  />
+                )}
+
                 {/* Floating Emote Bubble above Opponent */}
                 {oppEmote && (
                   <div
@@ -289,9 +298,13 @@ export function GameBoard({
                       unoZ! Aman
                     </span>
                   ) : isTurn ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-amber-600 dark:text-amber-300">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                      Giliran...
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold text-amber-600 dark:text-amber-300">
+                      {opp.isBot ? "Mikir" : "Giliran"}
+                      <span className="turn-dots inline-flex gap-0.5" aria-hidden="true">
+                        <span />
+                        <span />
+                        <span />
+                      </span>
                     </span>
                   ) : (
                     <span className="text-[10px] text-slate-400 font-semibold">
@@ -334,58 +347,8 @@ export function GameBoard({
           </div>
         )}
 
-        {/* Animated Turn Ring & Rotating Direction Ring */}
+        {/* Center Table */}
         <div className="relative flex items-center justify-center p-5 sm:p-7">
-          {/* Outer Animated SVG Direction Arrows */}
-          <svg
-            viewBox="0 0 260 260"
-            className={`pointer-events-none absolute inset-0 w-full h-full opacity-55 dark:opacity-65 ${
-              gameState.direction === 1
-                ? "animate-spin-slow"
-                : "animate-spin-reverse-slow"
-            }`}
-            aria-hidden="true"
-          >
-            <defs>
-              <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop
-                  offset="0%"
-                  stopColor={
-                    gameState.activeColor === "merah"
-                      ? "#ef4444"
-                      : gameState.activeColor === "biru"
-                      ? "#3b82f6"
-                      : gameState.activeColor === "kuning"
-                      ? "#facc15"
-                      : "#22c55e"
-                  }
-                />
-                <stop offset="100%" stopColor="#a855f7" />
-              </linearGradient>
-            </defs>
-            <circle
-              cx="130"
-              cy="130"
-              r="118"
-              fill="none"
-              stroke="url(#ringGrad)"
-              strokeWidth="4"
-              strokeDasharray="46 20"
-              strokeLinecap="round"
-            />
-            {/* Arrowheads around the orbit */}
-            {gameState.direction === 1 ? (
-              <>
-                <polygon points="130,4 142,13 128,20" fill="url(#ringGrad)" />
-                <polygon points="130,256 118,247 132,240" fill="url(#ringGrad)" />
-              </>
-            ) : (
-              <>
-                <polygon points="130,4 118,13 132,20" fill="url(#ringGrad)" />
-                <polygon points="130,256 142,247 128,240" fill="url(#ringGrad)" />
-              </>
-            )}
-          </svg>
 
           {/* Center Piles: Draw Deck + Discard Stack */}
           <div className="relative z-10 flex items-center gap-5 sm:gap-7">
@@ -517,12 +480,18 @@ export function GameBoard({
         <div className="flex flex-wrap items-center justify-between gap-2 px-2">
           <div className="flex items-center gap-2">
             <span
-              className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-extrabold transition ${
+              className={`relative inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-extrabold transition ${
                 isMyTurn
                   ? "bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-lg shadow-amber-500/25"
                   : "glass-panel text-slate-700 dark:text-slate-200"
               }`}
             >
+              {isMyTurn && (
+                <span
+                  aria-hidden="true"
+                  className="turn-loader pointer-events-none absolute -inset-[4px] rounded-full"
+                />
+              )}
               {isMyTurn ? (
                 <>
                   <Sparkles className="w-4 h-4" />

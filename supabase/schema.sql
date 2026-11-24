@@ -37,10 +37,14 @@ CREATE INDEX IF NOT EXISTS idx_unoz_room_code ON unoz_rooms(room_code);
 ALTER TABLE unoz_rooms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE unoz_players ENABLE ROW LEVEL SECURITY;
 
+-- Izin tabel untuk role anon (dipakai browser tanpa login)
+GRANT SELECT, INSERT, UPDATE, DELETE ON unoz_rooms TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON unoz_players TO anon, authenticated;
+
 DROP POLICY IF EXISTS "unoz_rooms_public_all" ON unoz_rooms;
 CREATE POLICY "unoz_rooms_public_all" ON unoz_rooms
-  FOR ALL USING (true) WITH CHECK (true);
+  FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "unoz_players_public_all" ON unoz_players;
 CREATE POLICY "unoz_players_public_all" ON unoz_players
-  FOR ALL USING (true) WITH CHECK (true);
+  FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);

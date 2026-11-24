@@ -2,7 +2,8 @@
 
 import { Ban, RefreshCw, Shield, Shuffle, Sparkles } from "lucide-react";
 import React from "react";
-import { COLOR_META, getCardDisplayName } from "@/lib/constants";
+import { type CardSkinId, useCardSkin } from "@/components/CardSkin";
+import { COLOR_META, getCardDisplayName, getDrawAmount, isMegaDraw } from "@/lib/constants";
 import type { Card, CardColor } from "@/types/game";
 
 /** Colorblind-friendly corner symbol:
@@ -50,9 +51,98 @@ export function ColorSymbol({
   );
 }
 
+
+type CardSize = "xs" | "sm" | "md" | "lg";
+
+/** Numeral / icon color printed on the white medallion */
+const INK: Record<CardColor, string> = {
+  merah: "text-red-500",
+  biru: "text-blue-500",
+  kuning: "text-amber-400",
+  hijau: "text-emerald-500",
+};
+
+const TEXTURE: Record<CardColor | "wild", string> = {
+  merah: "card-tex-merah",
+  biru: "card-tex-biru",
+  kuning: "card-tex-kuning",
+  hijau: "card-tex-hijau",
+  wild: "card-tex-wild",
+};
+
+const SIZE_STYLE: Record<
+  CardSize,
+  {
+    dims: string;
+    clipRadius: string;
+    frameRadius: string;
+    medallion: string;
+    numeral: string;
+    plus: string;
+    mega10: string;
+    icon: string;
+    corner: string;
+    cornerIcon: string;
+    cornerSymbol: string;
+  }
+> = {
+  xs: {
+    dims: "w-12 h-[4.5rem] rounded-xl p-1",
+    clipRadius: "rounded-[9px]",
+    frameRadius: "rounded-[6px]",
+    medallion: "w-7 h-7",
+    numeral: "text-xl",
+    plus: "text-base",
+    mega10: "text-sm",
+    icon: "w-4 h-4",
+    corner: "text-[10px]",
+    cornerIcon: "w-2.5 h-2.5",
+    cornerSymbol: "w-2 h-2 mt-px",
+  },
+  sm: {
+    dims: "w-16 h-24 rounded-2xl p-1.5",
+    clipRadius: "rounded-[13px]",
+    frameRadius: "rounded-[10px]",
+    medallion: "w-9 h-9",
+    numeral: "text-3xl",
+    plus: "text-2xl",
+    mega10: "text-xl",
+    icon: "w-6 h-6",
+    corner: "text-xs",
+    cornerIcon: "w-3 h-3",
+    cornerSymbol: "w-2.5 h-2.5 mt-0.5",
+  },
+  md: {
+    dims: "w-[5.25rem] h-[7.6rem] sm:w-24 sm:h-36 rounded-2xl p-2",
+    clipRadius: "rounded-[13px]",
+    frameRadius: "rounded-[10px]",
+    medallion: "w-12 h-12 sm:w-14 sm:h-14",
+    numeral: "text-4xl sm:text-[2.75rem]",
+    plus: "text-3xl sm:text-4xl",
+    mega10: "text-2xl sm:text-3xl",
+    icon: "w-8 h-8 sm:w-9 sm:h-9",
+    corner: "text-xs sm:text-sm",
+    cornerIcon: "w-3 h-3 sm:w-3.5 sm:h-3.5",
+    cornerSymbol: "w-2.5 h-2.5 mt-0.5",
+  },
+  lg: {
+    dims: "w-28 h-40 sm:w-32 sm:h-44 rounded-3xl p-2.5",
+    clipRadius: "rounded-[21px]",
+    frameRadius: "rounded-[18px]",
+    medallion: "w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem]",
+    numeral: "text-5xl sm:text-6xl",
+    plus: "text-4xl sm:text-5xl",
+    mega10: "text-3xl sm:text-4xl",
+    icon: "w-10 h-10 sm:w-11 sm:h-11",
+    corner: "text-base",
+    cornerIcon: "w-4 h-4",
+    cornerSymbol: "w-3.5 h-3.5 mt-0.5",
+  },
+};
+
 interface UnoCardProps {
   card: Card;
-  size?: "xs" | "sm" | "md" | "lg";
+  size?: CardSize;
   playable?: boolean;
   isJumpIn?: boolean;
   disabled?: boolean;
@@ -60,6 +150,8 @@ interface UnoCardProps {
   activeWildColor?: CardColor;
   onClick?: () => void;
   className?: string;
+  /** Force a skin (used by skin previews); defaults to the viewer's chosen skin */
+  skin?: CardSkinId;
 }
 
 export function UnoCard({
@@ -72,35 +164,41 @@ export function UnoCard({
   activeWildColor,
   onClick,
   className = "",
+  skin: skinOverride,
 }: UnoCardProps) {
+  const { skin: contextSkin } = useCardSkin();
+  const skin = skinOverride ?? contextSkin;
   const isWild = card.color === "wild";
   const isZCard = card.value === "z_swap" || card.value === "z_shield";
-
-  const dims =
-    size === "xs"
-      ? "w-12 h-[4.5rem] rounded-xl p-1"
-      : size === "sm"
-      ? "w-16 h-24 rounded-2xl p-1.5"
-      : size === "lg"
-      ? "w-28 h-40 sm:w-32 sm:h-44 rounded-3xl p-2.5"
-      : "w-[5.25rem] h-[7.6rem] sm:w-24 sm:h-36 rounded-2xl p-2";
-
-  const bgStyle = isZCard
+  const isMega = isMegaDraw(card.value);
+  const s = SIZE_STYLE[size];
+  const kind = isZCard
     ? card.value === "z_swap"
-      ? "bg-gradient-to-br from-fuchsia-600 via-purple-700 to-indigo-900"
-      : "bg-gradient-to-br from-cyan-500 via-teal-600 to-slate-900"
+      ? "zswap"
+      : "zshield"
+    : isMega
+    ? "mega"
+    : card.color;
+
+  const bgStyle = isMega
+    ? "bg-gradient-to-br from-rose-600 via-red-800 to-zinc-950"
+    : isZCard
+    ? card.value === "z_swap"
+      ? "bg-gradient-to-br from-fuchsia-500 via-purple-700 to-indigo-950"
+      : "bg-gradient-to-br from-cyan-400 via-teal-600 to-slate-900"
     : isWild
     ? "bg-gradient-to-br from-slate-800 via-slate-900 to-zinc-950"
     : `bg-gradient-to-br ${COLOR_META[card.color as CardColor].gradient}`;
 
+  const textContrast = card.color === "kuning" ? "text-slate-950" : "text-white";
+  const ink = isWild ? "text-white" : INK[card.color as CardColor];
+
   const renderCornerBadge = () => {
-    const cornerIconClass =
-      size === "lg" ? "w-4 h-4" : size === "xs" ? "w-2.5 h-2.5" : "w-3 h-3";
     if (card.value === "skip") {
-      return <Ban className={`${cornerIconClass} stroke-[2.8]`} aria-hidden="true" />;
+      return <Ban className={`${s.cornerIcon} stroke-[3]`} aria-hidden="true" />;
     }
     if (card.value === "reverse") {
-      return <RefreshCw className={`${cornerIconClass} stroke-[2.8]`} aria-hidden="true" />;
+      return <RefreshCw className={`${s.cornerIcon} stroke-[3]`} aria-hidden="true" />;
     }
     const labelText = (() => {
       switch (card.value) {
@@ -110,6 +208,10 @@ export function UnoCard({
           return "W";
         case "wild4":
           return "+4";
+        case "wild6":
+        case "wild8":
+        case "wild10":
+          return `+${getDrawAmount(card.value)}`;
         case "z_swap":
           return "ZS";
         case "z_shield":
@@ -119,146 +221,111 @@ export function UnoCard({
       }
     })();
     return (
-      <span
-        className={`font-display font-bold ${
-          size === "lg" ? "text-base" : size === "xs" ? "text-[10px]" : "text-xs"
-        }`}
-      >
+      <span className={`uz-corner font-display font-bold ${s.corner} ${card.color === "kuning" ? "" : "card-corner-ink"}`}>
         {labelText}
       </span>
     );
   };
 
-  const textContrast =
-    card.color === "kuning" ? "text-slate-950" : "text-white";
+  const medallionSurface = isZCard
+    ? "card-medallion-z"
+    : isWild
+    ? "card-medallion-wild"
+    : "card-medallion";
 
-  const renderCenterArt = () => {
-    const iconClass =
-      size === "lg"
-        ? "w-11 h-11"
-        : size === "sm"
-        ? "w-6 h-6"
-        : size === "xs"
-        ? "w-5 h-5"
-        : "w-9 h-9";
-
+  const renderCenterGlyph = () => {
     switch (card.value) {
       case "skip":
-        return <Ban className={`${iconClass} stroke-[2.6] drop-shadow`} />;
+        return <Ban className={`${s.icon} ${ink} stroke-[3] card-icon-ink`} />;
       case "reverse":
-        return <RefreshCw className={`${iconClass} stroke-[2.6] drop-shadow`} />;
+        return <RefreshCw className={`${s.icon} ${ink} stroke-[3] card-icon-ink`} />;
       case "draw2":
+        return <span className={`card-ink font-display font-bold leading-none ${s.plus} ${ink}`}>+2</span>;
+      case "wild":
+        return <Sparkles className={`${s.icon} text-white fill-white/90 stroke-[2] card-icon-ink`} />;
+      case "wild4":
+        return <span className={`card-ink font-display font-bold leading-none ${s.plus} text-white`}>+4</span>;
+      case "wild6":
+      case "wild8":
+      case "wild10":
         return (
           <span
-            className={`font-display font-bold leading-none drop-shadow ${
-              size === "lg" ? "text-5xl" : size === "sm" ? "text-2xl" : "text-4xl"
+            className={`card-ink font-display font-bold leading-none text-white ${
+              card.value === "wild10" ? s.mega10 : s.plus
             }`}
           >
-            +2
+            +{getDrawAmount(card.value)}
           </span>
         );
-      case "wild":
-        return (
-          <div className="relative flex items-center justify-center">
-            <div
-              className={`grid grid-cols-2 gap-0.5 rotate-12 rounded-xl overflow-hidden shadow-inner ${
-                size === "lg" ? "w-14 h-14" : size === "sm" ? "w-8 h-8" : "w-11 h-11"
-              }`}
-            >
-              <div className="bg-red-500" />
-              <div className="bg-blue-500" />
-              <div className="bg-amber-400" />
-              <div className="bg-emerald-500" />
-            </div>
-            <Sparkles className="w-5 h-5 text-white absolute drop-shadow-md" />
-          </div>
-        );
-      case "wild4":
-        return (
-          <div className="flex flex-col items-center">
-            <div className="flex -space-x-2 mb-0.5">
-              <span className="w-3.5 h-5 rounded-sm bg-red-500 border border-white/80 -rotate-12 inline-block" />
-              <span className="w-3.5 h-5 rounded-sm bg-blue-500 border border-white/80 -rotate-3 inline-block" />
-              <span className="w-3.5 h-5 rounded-sm bg-amber-400 border border-white/80 rotate-6 inline-block" />
-              <span className="w-3.5 h-5 rounded-sm bg-emerald-500 border border-white/80 rotate-12 inline-block" />
-            </div>
-            <span
-              className={`font-display font-bold leading-none text-white drop-shadow ${
-                size === "lg" ? "text-4xl" : size === "sm" ? "text-xl" : "text-3xl"
-              }`}
-            >
-              +4
-            </span>
-          </div>
-        );
       case "z_swap":
-        return (
-          <div className="flex flex-col items-center gap-0.5">
-            <Shuffle className={`${iconClass} text-amber-300 stroke-[2.5] drop-shadow`} />
-            {size !== "xs" && (
-              <span className="font-display font-bold text-[10px] sm:text-xs tracking-wider uppercase text-amber-200">
-                Z-Swap
-              </span>
-            )}
-          </div>
-        );
+        return <Shuffle className={`${s.icon} text-amber-300 stroke-[2.8] card-icon-ink`} />;
       case "z_shield":
-        return (
-          <div className="flex flex-col items-center gap-0.5">
-            <Shield className={`${iconClass} text-cyan-200 stroke-[2.5] drop-shadow`} />
-            {size !== "xs" && (
-              <span className="font-display font-bold text-[10px] sm:text-xs tracking-wider uppercase text-cyan-100">
-                Z-Shield
-              </span>
-            )}
-          </div>
-        );
+        return <Shield className={`${s.icon} text-cyan-200 fill-cyan-400/40 stroke-[2.6] card-icon-ink`} />;
       default:
         return (
-          <span
-            className={`font-display font-bold leading-none drop-shadow-sm ${
-              size === "lg"
-                ? "text-6xl"
-                : size === "sm"
-                ? "text-3xl"
-                : size === "xs"
-                ? "text-xl"
-                : "text-5xl"
-            }`}
-          >
+          <span className={`card-ink font-display font-bold leading-none ${s.numeral} ${ink}`}>
             {card.value}
           </span>
         );
     }
   };
 
+  const subtitle =
+    size === "md" || size === "lg"
+      ? card.value === "skip" ||
+        card.value === "reverse" ||
+        card.value === "draw2" ||
+        card.value === "wild" ||
+        isZCard ||
+        isMega
+        ? getCardDisplayName(card.value)
+        : null
+      : null;
+
   const label =
     card.color === "wild"
       ? getCardDisplayName(card.value)
       : `${COLOR_META[card.color].name} ${getCardDisplayName(card.value)}`;
 
+  // Decorative cards (no onClick) render as a div so they can sit inside other buttons
+  const Root = onClick ? "button" : "div";
+  const rootProps = onClick
+    ? { type: "button" as const, onClick, disabled }
+    : { role: "img" as const };
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled || !onClick}
+    <Root
+      {...rootProps}
       aria-label={label}
       title={label}
-      className={`group relative select-none text-left transition-all duration-200 ${dims} ${bgStyle} ${textContrast} border-[3px] ${
+      data-skin={skin}
+      className={`uz-card uz-c-${kind} group relative select-none text-left transition-all duration-200 ${s.dims} ${bgStyle} ${textContrast} border-[3px] ${
         isJumpIn
           ? "border-amber-300 ring-4 ring-amber-400/70 shadow-xl shadow-amber-500/35"
           : playable
-          ? "border-white ring-2 ring-white/80 shadow-xl shadow-black/30 hover:-translate-y-4 active:scale-95 cursor-pointer"
-          : "border-white/85 shadow-lg shadow-black/25"
+          ? "border-white ring-2 ring-white/80 shadow-[0_3px_0_rgba(15,23,42,0.35),0_14px_24px_-8px_rgba(0,0,0,0.55)] hover:-translate-y-4 active:scale-95 cursor-pointer"
+          : "border-white shadow-[0_3px_0_rgba(15,23,42,0.3),0_10px_20px_-8px_rgba(0,0,0,0.5)]"
       } ${selected ? "-translate-y-5 ring-4 ring-amber-300" : ""} ${
-        disabled && !playable ? "opacity-55 saturate-75 cursor-not-allowed" : ""
+        disabled && !playable ? "brightness-[0.62] saturate-[0.55] cursor-not-allowed" : ""
       } ${className}`}
     >
-      {/* Glossy diagonal sheen */}
-      <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-tr from-black/15 via-transparent to-white/25" />
-
-      {/* Center oval emblem */}
-      <div className="pointer-events-none absolute inset-2.5 rounded-[45%] border border-white/25 bg-white/12 -rotate-12" />
+      {/* Art layers, clipped to the card face */}
+      <div className={`uz-clip pointer-events-none absolute inset-0 overflow-hidden ${s.clipRadius}`}>
+        {/* Colorblind-symbol watermark */}
+        <div className={`uz-tex absolute inset-0 ${isZCard || isMega ? "card-tex-wild opacity-60" : TEXTURE[card.color]}`} />
+        {/* Sunburst behind the medallion */}
+        <div className="uz-rays absolute inset-0 card-rays" />
+        {/* Danger pulse on Super draw cards */}
+        {isMega && <div className="uz-mega absolute inset-0 card-mega-pulse" />}
+        {/* Top gloss */}
+        <div className="uz-gloss absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/30 to-transparent" />
+        {/* Bottom shade */}
+        <div className="uz-shade absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent" />
+        {/* Holographic sweep on special cards */}
+        {isZCard && <div className="uz-holo absolute inset-0 card-holo" />}
+        {/* Printed inner frame */}
+        <div className={`uz-frame absolute inset-[3px] ${s.frameRadius} border border-white/35`} />
+      </div>
 
       {/* Active color halo if this wild is on the discard pile */}
       {activeWildColor && isWild && (
@@ -278,39 +345,38 @@ export function UnoCard({
       )}
 
       {/* Top-Left Corner: Value + Colorblind Symbol */}
-      <div className="relative z-10 flex flex-col items-center w-fit leading-none">
+      <div
+        className={`absolute z-10 flex flex-col items-center leading-none ${
+          size === "xs" ? "top-1 left-1" : size === "lg" ? "top-2 left-2" : "top-1.5 left-1.5"
+        }`}
+      >
         {renderCornerBadge()}
-        <ColorSymbol
-          color={card.color}
-          className={size === "lg" ? "w-3.5 h-3.5 mt-0.5" : "w-2.5 h-2.5 mt-0.5"}
-        />
+        <ColorSymbol color={card.color} className={s.cornerSymbol} />
       </div>
 
-      {/* Center Value / Graphic */}
-      <div className="absolute inset-0 z-10 flex items-center justify-center">
-        {renderCenterArt()}
+      {/* Center diamond medallion + glyph */}
+      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+        <div className={`uz-medal absolute ${s.medallion} rotate-45 rounded-[28%] ${medallionSurface}`} />
+        <div className="uz-glyph relative flex items-center justify-center">{renderCenterGlyph()}</div>
       </div>
 
       {/* Bottom-Right Corner (Mirrored) */}
-      <div className="absolute bottom-1.5 right-1.5 z-10 flex flex-col items-center leading-none rotate-180">
+      <div
+        className={`absolute z-10 flex flex-col items-center leading-none rotate-180 ${
+          size === "xs" ? "bottom-1 right-1" : size === "lg" ? "bottom-2 right-2" : "bottom-1.5 right-1.5"
+        }`}
+      >
         {renderCornerBadge()}
-        <ColorSymbol
-          color={card.color}
-          className={size === "lg" ? "w-3.5 h-3.5 mt-0.5" : "w-2.5 h-2.5 mt-0.5"}
-        />
+        <ColorSymbol color={card.color} className={s.cornerSymbol} />
       </div>
 
-      {/* Subtle Indonesian card subtitle on medium/large cards */}
-      {(size === "md" || size === "lg") &&
-        (card.value === "skip" ||
-          card.value === "reverse" ||
-          card.value === "draw2" ||
-          card.value === "wild") && (
-          <span className="pointer-events-none absolute bottom-1.5 left-2 z-10 text-[9px] font-bold uppercase tracking-tight opacity-85">
-            {getCardDisplayName(card.value)}
-          </span>
-        )}
-    </button>
+      {/* Indonesian card name ribbon on medium/large action cards */}
+      {subtitle && (
+        <span className="uz-ribbon pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 z-10 max-w-[62%] truncate px-1.5 py-px rounded-full bg-slate-950/55 text-white text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wide leading-tight backdrop-blur-sm">
+          {subtitle}
+        </span>
+      )}
+    </Root>
   );
 }
 
@@ -320,49 +386,75 @@ export function UnoCardBack({
   highlight = false,
   onClick,
   label = "Ambil Kartu",
+  skin: skinOverride,
 }: {
   size?: "sm" | "md" | "lg";
   countBadge?: number;
   highlight?: boolean;
   onClick?: () => void;
   label?: string;
+  skin?: CardSkinId;
 }) {
-  const dims =
-    size === "sm"
-      ? "w-14 h-20 rounded-xl"
-      : size === "lg"
-      ? "w-28 h-40 sm:w-32 sm:h-44 rounded-3xl"
-      : "w-[5.25rem] h-[7.6rem] sm:w-24 sm:h-36 rounded-2xl";
+  const { skin: contextSkin } = useCardSkin();
+  const skin = skinOverride ?? contextSkin;
+  const s = SIZE_STYLE[size];
+  const showStack = typeof countBadge === "number" && countBadge > 1;
+
+  const Root = onClick ? "button" : "div";
+  const rootProps = onClick ? { type: "button" as const, onClick } : { role: "img" as const };
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={!onClick}
+    <Root
+      {...rootProps}
       aria-label={label}
-      className={`relative select-none ${dims} bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 border-[3px] ${
+      data-skin={skin}
+      className={`uz-card uz-back relative select-none ${s.dims.replace(/\bp-[\d.]+\b/, "")} bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 border-[3px] ${
         highlight
-          ? "border-amber-300 ring-4 ring-amber-400/50 shadow-xl shadow-amber-500/25 hover:scale-105 active:scale-95 cursor-pointer"
-          : "border-white/80 shadow-xl shadow-black/40"
-      } transition-all duration-200 flex items-center justify-center overflow-hidden`}
+          ? "border-amber-300 ring-4 ring-amber-400/50 hover:scale-105 active:scale-95 cursor-pointer"
+          : "border-white"
+      } ${
+        showStack
+          ? "shadow-[3px_3px_0_-1px_#e2e8f0,6px_6px_0_-2px_#94a3b8,9px_9px_0_-3px_#64748b,0_18px_28px_-10px_rgba(0,0,0,0.7)]"
+          : "shadow-xl shadow-black/40"
+      } transition-all duration-200 flex items-center justify-center`}
     >
-      {/* Decorative stacked illusion */}
-      <div className="pointer-events-none absolute inset-2 rounded-[45%] bg-gradient-to-br from-rose-500/30 via-amber-400/25 to-blue-500/30 border border-white/20 -rotate-12" />
-      <div className="relative z-10 flex flex-col items-center">
-        <span className="font-display font-bold text-xl sm:text-2xl tracking-tight bg-gradient-to-r from-red-400 via-amber-300 to-sky-400 bg-clip-text text-transparent drop-shadow">
-          unoZ
-        </span>
-        {highlight && (
-          <span className="mt-1 px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-extrabold uppercase tracking-wide shadow">
-            Ambil
-          </span>
-        )}
+      <div className={`uz-clip pointer-events-none absolute inset-0 overflow-hidden ${s.clipRadius}`}>
+        <div className="uz-rays absolute inset-0 card-back-burst" />
+        <div className="uz-tex absolute inset-0 card-tex-wild opacity-70" />
+        <div className="uz-gloss absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent" />
+        <div className={`uz-frame absolute inset-[3px] ${s.frameRadius} border border-white/35`} />
+        <div className={`uz-frame2 absolute inset-[7px] ${s.frameRadius} border border-dashed border-white/15`} />
       </div>
+
+      <div className="relative z-10 flex items-center justify-center">
+        <div className={`uz-medal absolute ${s.medallion} rotate-45 rounded-[28%] card-medallion-wild`} />
+        <span
+          className={`uz-glyph relative card-ink font-display font-bold leading-none text-white ${
+            size === "lg" ? "text-4xl sm:text-5xl" : size === "sm" ? "text-2xl" : "text-3xl sm:text-4xl"
+          }`}
+        >
+          Z
+        </span>
+      </div>
+
+      <span
+        className={`uz-wordmark pointer-events-none absolute left-1/2 -translate-x-1/2 z-10 font-display font-bold tracking-tight leading-none text-white card-corner-ink ${
+          size === "lg" ? "top-3 text-base" : "top-2 text-xs"
+        }`}
+      >
+        uno<span className="text-amber-300">Z</span>
+      </span>
+
+      {highlight && (
+        <span className="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-10 px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-extrabold uppercase tracking-wide shadow animate-pulse">
+          Ambil
+        </span>
+      )}
       {typeof countBadge === "number" && (
-        <span className="absolute bottom-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded-md bg-white/15 text-white text-[10px] font-bold backdrop-blur">
+        <span className="absolute -top-2 -right-2 z-20 min-w-6 px-1.5 py-0.5 rounded-full bg-slate-950 border-2 border-white text-white text-[10px] font-extrabold shadow-md text-center">
           {countBadge}
         </span>
       )}
-    </button>
+    </Root>
   );
 }

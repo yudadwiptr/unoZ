@@ -16,6 +16,9 @@ export type CardValue =
   | "draw2"
   | "wild"
   | "wild4"
+  | "wild6"
+  | "wild8"
+  | "wild10"
   | "z_swap"
   | "z_shield";
 
@@ -25,7 +28,7 @@ export interface Card {
   value: CardValue;
 }
 
-export type GameMode = "klasik" | "chaos";
+export type GameMode = "klasik" | "chaos" | "super_chaos";
 
 export interface RoomSettings {
   mode: GameMode;
@@ -33,6 +36,8 @@ export interface RoomSettings {
   seven_zero: boolean;
   jump_in: boolean;
   z_cards: boolean;
+  /** Super draw cards (+6 / +8 / +10). Optional for rooms saved before it existed. */
+  mega_draw?: boolean;
 }
 
 export interface PlayerInfo {

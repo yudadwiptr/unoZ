@@ -59,6 +59,7 @@ export const DEFAULT_CHAOS_SETTINGS: RoomSettings = {
   seven_zero: true,
   jump_in: true,
   z_cards: true,
+  mega_draw: false,
 };
 
 export const DEFAULT_KLASIK_SETTINGS: RoomSettings = {
@@ -67,7 +68,45 @@ export const DEFAULT_KLASIK_SETTINGS: RoomSettings = {
   seven_zero: false,
   jump_in: false,
   z_cards: false,
+  mega_draw: false,
 };
+
+export const DEFAULT_SUPER_CHAOS_SETTINGS: RoomSettings = {
+  mode: "super_chaos",
+  stacking: true,
+  seven_zero: true,
+  jump_in: true,
+  z_cards: true,
+  mega_draw: true,
+};
+
+export const MODE_LABEL: Record<RoomSettings["mode"], string> = {
+  klasik: "Klasik",
+  chaos: "Chaos / Mabar",
+  super_chaos: "Super Chaos",
+};
+
+/** How many cards a penalty card forces the next player to draw (0 = not a draw card). */
+export function getDrawAmount(value: CardValue): number {
+  switch (value) {
+    case "draw2":
+      return 2;
+    case "wild4":
+      return 4;
+    case "wild6":
+      return 6;
+    case "wild8":
+      return 8;
+    case "wild10":
+      return 10;
+    default:
+      return 0;
+  }
+}
+
+export function isMegaDraw(value: CardValue): boolean {
+  return value === "wild6" || value === "wild8" || value === "wild10";
+}
 
 export const CARD_COLORS: CardColor[] = ["merah", "biru", "kuning", "hijau"];
 
@@ -138,6 +177,12 @@ export function getCardDisplayName(value: CardValue): string {
       return "Ganti Warna";
     case "wild4":
       return "Wild +4";
+    case "wild6":
+      return "Super +6";
+    case "wild8":
+      return "Super +8";
+    case "wild10":
+      return "Super +10";
     case "z_swap":
       return "Z-Swap";
     case "z_shield":

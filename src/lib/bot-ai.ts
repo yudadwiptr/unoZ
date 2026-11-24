@@ -1,4 +1,4 @@
-import { CARD_COLORS } from "@/lib/constants";
+import { CARD_COLORS, getDrawAmount, isMegaDraw } from "@/lib/constants";
 import { canJumpInCard, canPlayCard, isCardWild } from "@/lib/game-engine";
 import type { Card, CardColor, FullGameState } from "@/types/game";
 
@@ -74,16 +74,16 @@ export function decideBotMove(
         chosenColor: pickBestColor(hand),
       };
     }
-    const draw2 = playableCards.find((c) => c.value === "draw2");
-    if (draw2) {
-      return { type: "PLAY_CARD", cardId: draw2.id };
-    }
-    const wild4 = playableCards.find((c) => c.value === "wild4");
-    if (wild4) {
+    // Counter with the smallest penalty card that still stacks, save the big guns
+    const counters = playableCards
+      .filter((c) => getDrawAmount(c.value) > 0)
+      .sort((a, b) => getDrawAmount(a.value) - getDrawAmount(b.value));
+    if (counters.length > 0) {
+      const counter = counters[0];
       return {
         type: "PLAY_CARD",
-        cardId: wild4.id,
-        chosenColor: pickBestColor(hand),
+        cardId: counter.id,
+        chosenColor: counter.color === "wild" ? pickBestColor(hand.filter((c) => c.id !== counter.id)) : undefined,
       };
     }
   }
@@ -101,6 +101,20 @@ export function decideBotMove(
         type: "PLAY_CARD",
         cardId: zSwap.id,
         chosenColor: pickBestColor(hand),
+      };
+    }
+  }
+
+  // Someone is about to win: drop the biggest Super draw card we hold
+  if (minOpponentCards <= 2) {
+    const mega = playableCards
+      .filter((c) => isMegaDraw(c.value))
+      .sort((a, b) => getDrawAmount(b.value) - getDrawAmount(a.value))[0];
+    if (mega) {
+      return {
+        type: "PLAY_CARD",
+        cardId: mega.id,
+        chosenColor: pickBestColor(hand.filter((c) => c.id !== mega.id)),
       };
     }
   }

@@ -12,13 +12,13 @@ export function UnozLogo({ size = "md", showTagline = false }: UnozLogoProps) {
   if (size === "lg") {
     return (
       <div className="inline-flex flex-col items-center select-none">
-        <div className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full drop-shadow-[0_14px_28px_rgba(16,185,129,0.28)]">
+        <div className="relative w-36 h-36 sm:w-44 sm:h-44 drop-shadow-[0_14px_28px_rgba(16,185,129,0.35)]">
           <Image
             src="/unoz-logo.png"
             alt="Logo unoZ"
             fill
             priority
-            sizes="(max-width: 640px) 128px, 144px"
+            sizes="(max-width: 640px) 144px, 176px"
             className="object-contain"
           />
         </div>

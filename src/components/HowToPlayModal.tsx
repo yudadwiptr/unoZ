@@ -222,9 +222,33 @@ export function HowToPlayModal({ open, onClose }: HowToPlayModalProps) {
                   Tumpuk Kartu (+2/+4)
                 </h4>
                 <p className="text-xs leading-relaxed">
-                  Lawan lempar +2? Balas lagi pakai +2 atau Wild +4 biar hukumannya
-                  makin gede buat pemain berikutnya! Wild +4 bisa ditumpuk dengan Wild +4.
+                  Lawan lempar +2? Balas pakai kartu penambah yang <strong>sama atau lebih
+                  besar</strong> (+2 → +4 → +6 → +8 → +10) biar hukumannya makin gede buat
+                  pemain berikutnya!
                 </p>
+              </div>
+              <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/35">
+                <div className="flex shrink-0 -space-x-6">
+                  <div className="-rotate-12">
+                    <UnoCard card={{ id: "dm6", color: "wild", value: "wild6" }} size="xs" />
+                  </div>
+                  <div className="-translate-y-1">
+                    <UnoCard card={{ id: "dm8", color: "wild", value: "wild8" }} size="xs" />
+                  </div>
+                  <div className="rotate-12">
+                    <UnoCard card={{ id: "dm10", color: "wild", value: "wild10" }} size="xs" />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-bold text-rose-600 dark:text-rose-300">
+                    Kartu Super +6 / +8 / +10 &amp; Mode Super Chaos
+                  </h4>
+                  <p className="text-xs leading-relaxed">
+                    Kartu ganti warna dengan hukuman raksasa. Aktif di mode{" "}
+                    <strong>Super Chaos</strong> (atau nyalakan &ldquo;Kartu Super&rdquo; di
+                    Lobby). Bisa ditumpuk, bisa dipantulkan Z-Shield. Siap-siap meja meledak!
+                  </p>
+                </div>
               </div>
               <div className="p-3.5 rounded-2xl bg-slate-100/90 dark:bg-white/5 border border-slate-200/70 dark:border-white/10 space-y-1">
                 <h4 className="font-bold text-slate-900 dark:text-white">

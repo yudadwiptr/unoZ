@@ -102,3 +102,406 @@
 .animate-panic-pulse {
   animation: panic-pulse 1.05s ease-in-out infinite;
 }
+
+/* --- Animated Arcade Background Utilities --- */
+.arcade-dot-grid {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.14) 1.2px, transparent 0),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+  background-size: 28px 28px, 56px 56px;
+}
+
+.dark .arcade-dot-grid {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.12) 1.15px, transparent 0),
+    linear-gradient(135deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 28px 28px, 56px 56px;
+}
+
+.arcade-grid-mask {
+  mask-image: radial-gradient(ellipse 78% 72% at 50% 45%, #000 35%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 78% 72% at 50% 45%, #000 35%, transparent 100%);
+}
+
+@keyframes orb-pulse-slow {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.72;
+  }
+  50% {
+    transform: translate3d(14px, -18px, 0) scale(1.12);
+    opacity: 1;
+  }
+}
+
+@keyframes orb-pulse-alt {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1.04);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translate3d(-18px, 16px, 0) scale(0.94);
+    opacity: 0.96;
+  }
+}
+
+@keyframes card-drift-a {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(var(--card-rot, 0deg));
+  }
+  50% {
+    transform: translate3d(10px, -22px, 0) rotate(calc(var(--card-rot, 0deg) + 5deg));
+  }
+}
+
+@keyframes card-drift-b {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(var(--card-rot, 0deg));
+  }
+  50% {
+    transform: translate3d(-12px, 20px, 0) rotate(calc(var(--card-rot, 0deg) - 6deg));
+  }
+}
+
+@keyframes card-drift-c {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(var(--card-rot, 0deg));
+  }
+  50% {
+    transform: translate3d(14px, 14px, 0) rotate(calc(var(--card-rot, 0deg) + 4deg));
+  }
+}
+
+.animate-orb-slow {
+  animation: orb-pulse-slow 14s ease-in-out infinite;
+}
+
+.animate-orb-alt {
+  animation: orb-pulse-alt 17s ease-in-out infinite;
+}
+
+.animate-card-drift-a {
+  animation: card-drift-a var(--drift-dur, 18s) ease-in-out var(--drift-delay, 0s) infinite;
+}
+
+.animate-card-drift-b {
+  animation: card-drift-b var(--drift-dur, 20s) ease-in-out var(--drift-delay, 0s) infinite;
+}
+
+.animate-card-drift-c {
+  animation: card-drift-c var(--drift-dur, 22s) ease-in-out var(--drift-delay, 0s) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-orb-slow,
+  .animate-orb-alt,
+  .animate-card-drift-a,
+  .animate-card-drift-b,
+  .animate-card-drift-c {
+    animation: none !important;
+  }
+}
+
+/* ============================================================
+   Card Art — textures, medallion, holo sheen
+   ============================================================ */
+
+/* Repeating colorblind-symbol watermark per card color */
+.card-tex-merah {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24'%3E%3Cpath fill='white' fill-opacity='0.16' d='M12 5l1.9 4.1 4.6.6-3.3 3.2.8 4.5L12 15.3l-4 2.1.8-4.5-3.3-3.2 4.6-.6z'/%3E%3C/svg%3E");
+  background-size: 14px 14px;
+}
+.card-tex-biru {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='5' fill='white' fill-opacity='0.16'/%3E%3C/svg%3E");
+  background-size: 14px 14px;
+}
+.card-tex-kuning {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24'%3E%3Cpath fill='white' fill-opacity='0.28' d='M12 6l6.5 11h-13z'/%3E%3C/svg%3E");
+  background-size: 14px 14px;
+}
+.card-tex-hijau {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24'%3E%3Crect x='7' y='7' width='10' height='10' rx='2' fill='white' fill-opacity='0.16'/%3E%3C/svg%3E");
+  background-size: 14px 14px;
+}
+.card-tex-wild {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill-opacity='0.22'%3E%3Cpath fill='%23ef4444' d='M12 5l1.9 4.1 4.6.6-3.3 3.2.8 4.5L12 15.3l-4 2.1.8-4.5-3.3-3.2 4.6-.6z'/%3E%3Ccircle cx='36' cy='12' r='5' fill='%233b82f6'/%3E%3Cpath fill='%23facc15' d='M12 30l6.5 11h-13z'/%3E%3Crect x='31' y='31' width='10' height='10' rx='2' fill='%2322c55e'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 22px 22px;
+}
+
+/* Sunburst rays radiating from card center */
+.card-rays {
+  background: repeating-conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(255, 255, 255, 0.13) 0deg 9deg,
+    transparent 9deg 22.5deg
+  );
+  mask-image: radial-gradient(circle at 50% 50%, #000 20%, transparent 72%);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 20%, transparent 72%);
+}
+
+/* Chunky sticker-style numerals: colored fill + dark outline + drop */
+.card-ink {
+  -webkit-text-stroke: 0.075em #0f172a;
+  paint-order: stroke fill;
+  text-shadow: 0 0.07em 0 #0f172a;
+}
+.card-icon-ink {
+  filter: drop-shadow(0 2px 0 #0f172a) drop-shadow(0 -1px 0 #0f172a) drop-shadow(1px 0 0 #0f172a) drop-shadow(-1px 0 0 #0f172a);
+}
+.card-corner-ink {
+  text-shadow: 0 1px 0 rgba(15, 23, 42, 0.55), 0 0 3px rgba(15, 23, 42, 0.35);
+}
+
+/* Diamond medallion surface */
+.card-medallion {
+  background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 55%, #e2e8f0 100%);
+  box-shadow:
+    inset 0 -3px 0 rgba(15, 23, 42, 0.12),
+    inset 0 2px 0 rgba(255, 255, 255, 0.9),
+    0 4px 10px -2px rgba(15, 23, 42, 0.45);
+}
+.card-medallion-wild {
+  background: conic-gradient(from 45deg, #ef4444 0 25%, #3b82f6 0 50%, #22c55e 0 75%, #facc15 0 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.85),
+    inset 0 -4px 8px rgba(15, 23, 42, 0.35),
+    0 4px 12px -2px rgba(0, 0, 0, 0.6);
+}
+.card-medallion-z {
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.25), rgba(15, 23, 42, 0.55) 70%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.55),
+    0 0 18px rgba(255, 255, 255, 0.25),
+    0 4px 12px -2px rgba(0, 0, 0, 0.6);
+}
+
+/* Holographic sweep for special Z-cards */
+@keyframes holo-sweep {
+  0% { background-position: 160% 0; }
+  100% { background-position: -60% 0; }
+}
+.card-holo {
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.05) 38%,
+    rgba(244, 114, 182, 0.4) 44%,
+    rgba(250, 204, 21, 0.4) 50%,
+    rgba(34, 211, 238, 0.4) 56%,
+    rgba(255, 255, 255, 0.05) 62%,
+    transparent 70%
+  );
+  background-size: 250% 100%;
+  mix-blend-mode: overlay;
+  animation: holo-sweep 3.6s ease-in-out infinite;
+}
+
+/* Card back: four-color sunburst */
+.card-back-burst {
+  background: repeating-conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(239, 68, 68, 0.55) 0deg 15deg,
+    rgba(59, 130, 246, 0.55) 15deg 30deg,
+    rgba(250, 204, 21, 0.5) 30deg 45deg,
+    rgba(34, 197, 94, 0.55) 45deg 60deg
+  );
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, #000 10%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, #000 10%, transparent 75%);
+}
+
+/* ============================================================
+   Background extras — grain, symbols, rays, table felt
+   ============================================================ */
+.bg-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+.bg-symbol-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%2394a3b8' stroke-opacity='0.22' stroke-width='1.2'%3E%3Cpath d='M12 5l1.9 4.1 4.6.6-3.3 3.2.8 4.5L12 15.3l-4 2.1.8-4.5-3.3-3.2 4.6-.6z'/%3E%3Ccircle cx='36' cy='12' r='5'/%3E%3Cpath d='M36 30l6.5 11h-13z'/%3E%3Crect x='7' y='31' width='10' height='10' rx='2'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 96px 96px;
+}
+
+@keyframes rays-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.bg-sunrays {
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.07) 0deg 6deg,
+    transparent 6deg 18deg
+  );
+  mask-image: radial-gradient(circle, #000 0%, transparent 65%);
+  -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 65%);
+  animation: rays-spin 90s linear infinite;
+}
+html:not(.dark) .bg-sunrays {
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(99, 102, 241, 0.08) 0deg 6deg,
+    transparent 6deg 18deg
+  );
+}
+
+/* Game-table felt: tinted by the active color via --table-tint */
+@property --table-tint {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #6366f1;
+}
+.bg-table-tint {
+  transition: --table-tint 0.7s ease;
+}
+.bg-table-felt {
+  background:
+    radial-gradient(ellipse 55% 42% at 50% 44%, color-mix(in srgb, var(--table-tint, #6366f1) 28%, transparent) 0%, transparent 70%),
+    radial-gradient(ellipse 90% 70% at 50% 44%, color-mix(in srgb, var(--table-tint, #6366f1) 10%, transparent) 0%, transparent 80%);
+}
+.bg-table-ring {
+  border: 1.5px solid color-mix(in srgb, var(--table-tint, #6366f1) 22%, transparent);
+  box-shadow:
+    0 0 0 16px color-mix(in srgb, var(--table-tint, #6366f1) 5%, transparent),
+    inset 0 0 90px color-mix(in srgb, var(--table-tint, #6366f1) 16%, transparent);
+  transition: border-color 0.6s ease, box-shadow 0.6s ease;
+}
+
+/* ============================================================
+   Opening splash loader
+   ============================================================ */
+@keyframes splash-logo-in {
+  0% { opacity: 0; transform: scale(0.4) rotate(-14deg); }
+  60% { opacity: 1; transform: scale(1.08) rotate(3deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes splash-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -8px; }
+}
+.splash-logo {
+  animation:
+    splash-logo-in 0.75s cubic-bezier(0.2, 1.3, 0.4, 1) both,
+    splash-float 2.4s ease-in-out 0.75s infinite;
+}
+@keyframes splash-fan {
+  0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+  38%, 68% { transform: translate(calc(-50% + var(--fx)), calc(-50% + var(--fy))) rotate(var(--fr)); }
+}
+.splash-card {
+  transform: translate(-50%, -50%);
+  animation: splash-fan 2.1s cubic-bezier(0.55, 0, 0.25, 1) infinite both;
+}
+@keyframes splash-progress {
+  0% { width: 4%; }
+  60% { width: 72%; }
+  100% { width: 100%; }
+}
+.splash-bar {
+  width: 4%;
+  animation: splash-progress 1.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ============================================================
+   Chunky 3D game buttons (pressable)
+   ============================================================ */
+.btn-3d {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+  box-shadow:
+    0 6px 0 var(--btn-edge, #9a3412),
+    0 14px 26px -10px var(--btn-glow, rgba(249, 115, 22, 0.6)),
+    inset 0 2px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.12);
+}
+.btn-3d::before {
+  /* glossy top half */
+  content: "";
+  position: absolute;
+  inset: 0 0 50% 0;
+  z-index: -1;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0));
+  border-radius: inherit;
+}
+.btn-3d::after {
+  /* shine sweep on hover */
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -60%;
+  width: 40%;
+  z-index: -1;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-18deg);
+  transition: left 0.6s ease;
+}
+.btn-3d:hover:not(:disabled)::after { left: 120%; }
+.btn-3d:hover:not(:disabled) { filter: brightness(1.06); transform: translateY(-1px); }
+.btn-3d:active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow:
+    0 1px 0 var(--btn-edge, #9a3412),
+    0 4px 10px -6px var(--btn-glow, rgba(249, 115, 22, 0.6)),
+    inset 0 2px 0 rgba(255, 255, 255, 0.35);
+}
+.btn-3d:disabled { filter: grayscale(0.4) brightness(0.8); cursor: not-allowed; }
+.btn-3d-amber { --btn-edge: #b45309; --btn-glow: rgba(245, 158, 11, 0.55); }
+.btn-3d-blue { --btn-edge: #1e3a8a; --btn-glow: rgba(59, 130, 246, 0.55); }
+.btn-3d-green { --btn-edge: #047857; --btn-glow: rgba(16, 185, 129, 0.55); }
+
+/* Turn loader: a bright arc running around the active player's chip */
+@property --loader-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes loader-run {
+  to { --loader-angle: 360deg; }
+}
+.turn-loader {
+  padding: 3px;
+  background: conic-gradient(
+    from var(--loader-angle),
+    transparent 0deg,
+    rgba(251, 191, 36, 0.15) 120deg,
+    #fbbf24 250deg,
+    #fde68a 290deg,
+    transparent 300deg
+  );
+  -webkit-mask-image: linear-gradient(#000, #000), linear-gradient(#000, #000);
+  -webkit-mask-clip: content-box, border-box;
+  -webkit-mask-composite: xor;
+  mask-image: linear-gradient(#000, #000), linear-gradient(#000, #000);
+  mask-clip: content-box, border-box;
+  mask-composite: exclude;
+  animation: loader-run 1.4s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.6));
+}
+
+/* "Thinking" dots */
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
+  40% { transform: translateY(-3px); opacity: 1; }
+}
+.turn-dots > span {
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: dot-bounce 1s ease-in-out infinite;
+}
+.turn-dots > span:nth-child(2) { animation-delay: 0.15s; }
+.turn-dots > span:nth-child(3) { animation-delay: 0.3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-logo,
+  .splash-card,
+  .turn-loader,
+  .turn-dots > span,
+  .card-holo,
+  .bg-sunrays {
+    animation: none !important;
+  }
+}

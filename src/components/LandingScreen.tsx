@@ -2,9 +2,11 @@
 
 import {
   BookOpen,
+  Check,
+  ChevronRight,
   Dices,
   DoorOpen,
-  PlusCircle,
+  Plus,
   Sparkles,
   Wifi,
   WifiOff,
@@ -12,8 +14,9 @@ import {
 import React, { useState } from "react";
 import { AvatarSvg } from "@/components/AvatarIcon";
 import { UnoCard } from "@/components/UnoCard";
+import { SkinPicker } from "@/components/SkinPicker";
 import { UnozLogo } from "@/components/UnozLogo";
-import { AVATAR_OPTIONS, RANDOM_NICKNAMES } from "@/lib/constants";
+import { AVATAR_OPTIONS, RANDOM_NICKNAMES, getAvatarById } from "@/lib/constants";
 import { soundEngine } from "@/lib/sound";
 
 interface LandingScreenProps {
@@ -42,6 +45,7 @@ export function LandingScreen({
   onOpenRules,
 }: LandingScreenProps) {
   const [roomCodeInput, setRoomCodeInput] = useState(initialRoomCode);
+  const selectedAvatar = getAvatarById(avatar);
 
   const handleRandomName = () => {
     soundEngine.play("click");
@@ -100,90 +104,154 @@ export function LandingScreen({
           </div>
         )}
 
-        {/* Nickname Input */}
-        <div className="space-y-2">
-          <label
-            htmlFor="nickname-input"
-            className="block text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400"
-          >
-            Nama Panggilan
-          </label>
-          <div className="flex gap-2">
-            <input
-              id="nickname-input"
-              type="text"
-              maxLength={20}
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              placeholder="Contoh: BangJago99"
-              className="flex-1 px-4 py-3 rounded-2xl bg-white/90 dark:bg-slate-900/80 border border-slate-200 dark:border-white/15 text-slate-900 dark:text-white font-bold text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
-            />
-            <button
-              type="button"
-              onClick={handleRandomName}
-              title="Acak Nama Panggilan"
-              className="px-3.5 rounded-2xl bg-slate-200/80 dark:bg-white/10 hover:bg-slate-300/80 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 font-bold text-xs inline-flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
-            >
-              <Dices className="w-4 h-4" />
-              <span className="hidden sm:inline">Acak</span>
-            </button>
+        {/* Player Profile Preview: live avatar + nickname */}
+        <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-white/10 bg-gradient-to-br from-white/80 to-slate-100/70 dark:from-white/[0.07] dark:to-white/[0.02] p-3.5 sm:p-4">
+          {/* Soft glow tinted by the chosen avatar */}
+          <div
+            className={`pointer-events-none absolute -left-10 -top-10 w-40 h-40 rounded-full blur-3xl opacity-40 dark:opacity-35 bg-gradient-to-br ${selectedAvatar.bg}`}
+          />
+          <div className="relative flex items-center gap-3.5 sm:gap-4">
+            {/* Big sticker-style avatar */}
+            <div className="relative shrink-0 -rotate-6">
+              <div
+                key={selectedAvatar.id}
+                className={`animate-pop-in relative w-[4.5rem] h-[4.5rem] sm:w-20 sm:h-20 rounded-[1.4rem] border-[3px] border-white bg-gradient-to-br ${selectedAvatar.bg} text-white flex items-center justify-center shadow-[0_4px_0_rgba(15,23,42,0.35),0_12px_24px_-8px_rgba(0,0,0,0.5)]`}
+              >
+                <div className="pointer-events-none absolute inset-0 rounded-[1.2rem] bg-gradient-to-b from-white/35 via-transparent to-black/15" />
+                <AvatarSvg avatarId={selectedAvatar.id} className="relative w-10 h-10 sm:w-11 sm:h-11 drop-shadow-[0_2px_0_rgba(15,23,42,0.45)]" />
+              </div>
+              <span className="absolute -bottom-1.5 -right-1.5 px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[9px] font-extrabold uppercase tracking-wide border-2 border-white dark:border-slate-900 shadow">
+                Kamu
+              </span>
+            </div>
+
+            {/* Nickname input */}
+            <div className="flex-1 min-w-0 space-y-1.5">
+              <label
+                htmlFor="nickname-input"
+                className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+              >
+                Nama Panggilan
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="nickname-input"
+                  type="text"
+                  maxLength={20}
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  placeholder="Contoh: BangJago99"
+                  className="flex-1 min-w-0 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-950/60 border-2 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white font-display font-bold text-base placeholder:font-sans placeholder:font-semibold placeholder:text-sm placeholder:text-slate-400 focus:outline-none focus:border-amber-400 dark:focus:border-amber-400 transition"
+                />
+                <button
+                  type="button"
+                  onClick={handleRandomName}
+                  title="Acak Nama Panggilan"
+                  aria-label="Acak Nama Panggilan"
+                  className="shrink-0 w-11 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white inline-flex items-center justify-center shadow-[0_3px_0_rgba(76,29,149,0.6)] hover:brightness-110 active:translate-y-0.5 active:shadow-none transition cursor-pointer"
+                >
+                  <Dices className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                <span className={`inline-block w-2 h-2 rounded-full bg-gradient-to-br ${selectedAvatar.bg}`} />
+                {selectedAvatar.label}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Avatar Selector */}
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <span
+              id="avatar-label"
+              className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+            >
               Pilih Avatar
             </span>
-            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-              {AVATAR_OPTIONS.find((a) => a.id === avatar)?.label}
+            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">
+              {AVATAR_OPTIONS.findIndex((a) => a.id === avatar) + 1}/{AVATAR_OPTIONS.length}
             </span>
           </div>
-          <div className="grid grid-cols-6 gap-2">
+          <div
+            role="radiogroup"
+            aria-labelledby="avatar-label"
+            className="grid grid-cols-6 gap-2 sm:gap-2.5"
+          >
             {AVATAR_OPTIONS.map((opt) => {
               const selected = opt.id === avatar;
               return (
                 <button
                   key={opt.id}
                   type="button"
+                  role="radio"
+                  aria-checked={selected}
                   onClick={() => {
                     soundEngine.play("click");
                     setAvatar(opt.id);
                   }}
                   aria-label={opt.label}
                   title={opt.label}
-                  className={`aspect-square rounded-2xl bg-gradient-to-br ${opt.bg} text-white flex items-center justify-center transition cursor-pointer ${
+                  className={`group relative aspect-square rounded-2xl bg-gradient-to-br ${opt.bg} text-white flex items-center justify-center transition-all duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${
                     selected
-                      ? "ring-4 ring-amber-400 scale-105 shadow-lg"
-                      : "opacity-75 hover:opacity-100 hover:scale-105"
+                      ? "border-[3px] border-white -translate-y-1 shadow-[0_4px_0_rgba(15,23,42,0.4),0_0_0_3px_rgba(251,191,36,0.9),0_10px_22px_-6px_rgba(251,191,36,0.55)]"
+                      : "border-2 border-white/15 shadow-[0_3px_0_rgba(15,23,42,0.35)] saturate-[0.8] hover:saturate-100 hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none"
                   }`}
                 >
-                  <AvatarSvg avatarId={opt.id} className="w-6 h-6 drop-shadow-sm" />
+                  <span className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-b from-white/30 via-transparent to-black/15" />
+                  <AvatarSvg
+                    avatarId={opt.id}
+                    className={`relative drop-shadow-[0_1.5px_0_rgba(15,23,42,0.4)] transition-transform ${
+                      selected ? "w-7 h-7 sm:w-8 sm:h-8 scale-110" : "w-6 h-6 sm:w-7 sm:h-7 group-hover:scale-110"
+                    }`}
+                  />
+                  {selected && (
+                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-400 border-2 border-white dark:border-slate-900 text-slate-950 flex items-center justify-center shadow">
+                      <Check className="w-3 h-3 stroke-[3.5]" />
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
         </div>
 
+        {/* Card Skin */}
+        <SkinPicker layout="row" />
+
         {/* Primary Action: Buat Room */}
         <button
           type="button"
           disabled={isLoading}
           onClick={onCreateRoom}
-          className="w-full py-4 px-5 rounded-2xl font-display font-bold text-lg bg-gradient-to-r from-red-500 via-amber-400 to-emerald-500 text-slate-950 shadow-xl shadow-amber-500/20 hover:brightness-105 active:scale-[0.98] disabled:opacity-60 transition inline-flex items-center justify-center gap-2.5 cursor-pointer"
+          className="btn-3d btn-3d-amber w-full mb-1.5 py-3.5 pl-3.5 pr-5 rounded-2xl bg-gradient-to-b from-amber-300 to-orange-500 text-slate-950 inline-flex items-center gap-3 cursor-pointer"
         >
-          <PlusCircle className="w-5 h-5 stroke-[2.5]" />
-          {isLoading ? "Menyiapkan Room..." : "Buat Room"}
+          <span className="shrink-0 w-11 h-11 rounded-xl bg-slate-950/90 text-amber-300 flex items-center justify-center shadow-inner">
+            {isLoading ? (
+              <span className="w-5 h-5 rounded-full border-[3px] border-amber-300 border-t-transparent animate-spin" />
+            ) : (
+              <Plus className="w-6 h-6 stroke-[3]" />
+            )}
+          </span>
+          <span className="flex-1 text-left leading-tight">
+            <span className="block font-display font-bold text-xl">
+              {isLoading ? "Menyiapkan Room..." : "Buat Room"}
+            </span>
+            <span className="block text-[11px] font-bold text-slate-900/70">
+              Jadi ketua • ajak teman atau lawan bot
+            </span>
+          </span>
+          <ChevronRight className="w-6 h-6 stroke-[3] opacity-70" />
         </button>
 
         {/* Divider */}
-        <div className="relative flex items-center justify-center">
-          <div className="w-full border-t border-slate-200 dark:border-white/10" />
-          <span className="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 bg-transparent shrink-0">
-            atau gabung teman
+        <div className="relative flex items-center justify-center gap-3">
+          <div className="flex-1 border-t border-dashed border-slate-300 dark:border-white/10" />
+          <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+            Punya kode teman?
           </span>
-          <div className="w-full border-t border-slate-200 dark:border-white/10" />
+          <div className="flex-1 border-t border-dashed border-slate-300 dark:border-white/10" />
         </div>
 
         {/* Join Room via 5-digit Code */}
@@ -192,26 +260,32 @@ export function LandingScreen({
             e.preventDefault();
             onJoinRoom(roomCodeInput);
           }}
-          className="flex gap-2"
+          className="flex items-stretch gap-2.5 pb-1.5"
         >
-          <input
-            type="text"
-            maxLength={6}
-            inputMode="text"
-            value={roomCodeInput}
-            onChange={(e) =>
-              setRoomCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))
-            }
-            placeholder="Kode 5 digit"
-            className="w-36 sm:w-44 px-4 py-3 rounded-2xl bg-white/90 dark:bg-slate-900/80 border border-slate-200 dark:border-white/15 text-center font-display font-bold tracking-[0.2em] text-base text-slate-900 dark:text-white placeholder:tracking-normal placeholder:font-sans placeholder:text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400 transition"
-          />
+          <label className="relative flex-1 min-w-0 flex items-center rounded-2xl bg-white dark:bg-slate-950/60 border-2 border-slate-200 dark:border-white/10 focus-within:border-sky-400 transition">
+            <span className="pl-3.5 font-display font-bold text-lg text-slate-300 dark:text-slate-600" aria-hidden="true">
+              #
+            </span>
+            <input
+              type="text"
+              maxLength={6}
+              inputMode="text"
+              aria-label="Kode room"
+              value={roomCodeInput}
+              onChange={(e) =>
+                setRoomCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))
+              }
+              placeholder="KODE"
+              className="w-full min-w-0 bg-transparent px-2 py-3 font-display font-bold tracking-[0.3em] text-lg text-slate-900 dark:text-white placeholder:tracking-[0.3em] placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:outline-none"
+            />
+          </label>
           <button
             type="submit"
             disabled={isLoading}
-            className="flex-1 py-3 px-4 rounded-2xl font-display font-bold text-base bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 hover:brightness-105 active:scale-[0.98] disabled:opacity-60 transition inline-flex items-center justify-center gap-2 cursor-pointer"
+            className="btn-3d btn-3d-blue shrink-0 px-5 rounded-2xl bg-gradient-to-b from-sky-400 to-blue-600 text-white font-display font-bold text-base inline-flex items-center justify-center gap-2 cursor-pointer"
           >
             <DoorOpen className="w-5 h-5" />
-            Gabung Room
+            Gabung
           </button>
         </form>
       </div>

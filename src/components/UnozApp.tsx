@@ -3,6 +3,9 @@
 import { BookOpen, ExternalLink, Moon, Sun, Volume2, VolumeX } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
+import { CardSkinProvider } from "@/components/CardSkin";
+import { SplashScreen } from "@/components/SplashScreen";
 import { GameBoard } from "@/components/GameBoard";
 import { HowToPlayModal } from "@/components/HowToPlayModal";
 import { LandingScreen } from "@/components/LandingScreen";
@@ -21,6 +24,17 @@ export function UnozApp() {
   const [showRules, setShowRules] = useState<boolean>(false);
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [muted, setMuted] = useState<boolean>(false);
+  const [splash, setSplash] = useState<"show" | "leaving" | "gone">("show");
+
+  // Opening loader: hold briefly so the shuffle plays, then fade out
+  useEffect(() => {
+    const leave = window.setTimeout(() => setSplash("leaving"), 1500);
+    const gone = window.setTimeout(() => setSplash("gone"), 2050);
+    return () => {
+      window.clearTimeout(leave);
+      window.clearTimeout(gone);
+    };
+  }, []);
 
   // Sync dark/light theme & mute state from localStorage on mount without hydration mismatch
   useEffect(() => {
@@ -52,16 +66,21 @@ export function UnozApp() {
   };
 
   return (
+    <CardSkinProvider>
+    {splash !== "gone" && <SplashScreen leaving={splash === "leaving"} />}
     <div className="relative min-h-dvh flex flex-col overflow-x-hidden">
-      {/* Vibrant Ambient Background Gradients */}
-      <div className="pointer-events-none fixed inset-0 -z-20 overflow-hidden">
-        <div className="absolute -top-28 -left-24 w-80 h-80 rounded-full bg-rose-500/20 dark:bg-rose-600/20 blur-3xl" />
-        <div className="absolute top-1/3 -right-24 w-80 h-80 rounded-full bg-sky-500/20 dark:bg-blue-600/20 blur-3xl" />
-        <div className="absolute -bottom-24 left-1/3 w-80 h-80 rounded-full bg-amber-400/20 dark:bg-emerald-500/15 blur-3xl" />
-      </div>
+      {/* Vibrant Multi-Layer Arcade Background (Full Vivid on Landing & Lobby, Subtle during Game) */}
+      <AnimatedBackground
+        variant={game.screen === "game" ? "subtle" : "vivid"}
+        tint={game.screen === "game" ? game.publicState?.activeColor : undefined}
+      />
 
       {/* Global Minimal Utility Bar */}
-      <header className="w-full max-w-5xl mx-auto px-4 pt-3 pb-1 flex items-center justify-between">
+      <header
+        className={`w-full mx-auto px-4 pt-3 pb-1 flex items-center justify-between ${
+          game.screen === "lobby" ? "max-w-7xl" : "max-w-5xl"
+        }`}
+      >
         <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
           {game.screen === "landing"
             ? "Main Kartu Bareng Teman & Bot"
@@ -230,5 +249,6 @@ export function UnozApp() {
       {/* How To Play Modal */}
       <HowToPlayModal open={showRules} onClose={() => setShowRules(false)} />
     </div>
+    </CardSkinProvider>
   );
 }

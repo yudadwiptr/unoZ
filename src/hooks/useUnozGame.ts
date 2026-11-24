@@ -6,6 +6,7 @@ import { decideBotMove, findBotJumpInMove } from "@/lib/bot-ai";
 import {
   BOT_PROFILES,
   DEFAULT_CHAOS_SETTINGS,
+  DEFAULT_SUPER_CHAOS_SETTINGS,
   DEFAULT_KLASIK_SETTINGS,
   QUICK_EMOTES,
 } from "@/lib/constants";
@@ -845,6 +846,8 @@ export function useUnozGame() {
         nextSettings = { ...DEFAULT_KLASIK_SETTINGS };
       } else if (patch.mode === "chaos") {
         nextSettings = { ...DEFAULT_CHAOS_SETTINGS };
+      } else if (patch.mode === "super_chaos") {
+        nextSettings = { ...DEFAULT_SUPER_CHAOS_SETTINGS };
       }
 
       setRoom((prev) => (prev ? { ...prev, settings: nextSettings } : prev));

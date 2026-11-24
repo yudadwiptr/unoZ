@@ -1,4 +1,10 @@
-import { CARD_COLORS, COLOR_META, getCardDisplayName } from "@/lib/constants";
+import {
+  CARD_COLORS,
+  COLOR_META,
+  getCardDisplayName,
+  getDrawAmount,
+  isMegaDraw,
+} from "@/lib/constants";
 import type {
   Card,
   CardColor,
@@ -32,7 +38,7 @@ export function shuffleCards<T>(items: T[]): T[] {
   return arr;
 }
 
-export function createDeck(includeZCards: boolean): Card[] {
+export function createDeck(includeZCards: boolean, includeMegaDraw = false): Card[] {
   const deck: Card[] = [];
 
   for (const color of CARD_COLORS) {
@@ -60,6 +66,14 @@ export function createDeck(includeZCards: boolean): Card[] {
   for (let i = 0; i < 4; i += 1) {
     deck.push({ id: makeId("w"), color: "wild", value: "wild" });
     deck.push({ id: makeId("w4"), color: "wild", value: "wild4" });
+  }
+
+  if (includeMegaDraw) {
+    for (let i = 0; i < 2; i += 1) {
+      deck.push({ id: makeId("w6"), color: "wild", value: "wild6" });
+      deck.push({ id: makeId("w8"), color: "wild", value: "wild8" });
+    }
+    deck.push({ id: makeId("w10"), color: "wild", value: "wild10" });
   }
 
   if (includeZCards) {
@@ -137,7 +151,7 @@ export function createInitialGameState(
   settings: RoomSettings
 ): FullGameState {
   const sortedPlayers = [...players].sort((a, b) => a.seatOrder - b.seatOrder);
-  const deck = createDeck(settings.z_cards);
+  const deck = createDeck(settings.z_cards, !!settings.mega_draw);
   const hands: Record<string, Card[]> = {};
 
   for (const player of sortedPlayers) {
@@ -280,14 +294,13 @@ export function canPlayCard(
     if (!state.settings.stacking) {
       return { playable: false, isJumpIn: false };
     }
-    if (topCard.value === "draw2") {
+    // Stack only with an equal-or-bigger penalty card (+2 < +4 < +6 < +8 < +10)
+    const topAmount = getDrawAmount(topCard.value);
+    if (topAmount > 0) {
       return {
-        playable: card.value === "draw2" || card.value === "wild4",
+        playable: getDrawAmount(card.value) >= topAmount,
         isJumpIn: false,
       };
-    }
-    if (topCard.value === "wild4") {
-      return { playable: card.value === "wild4", isJumpIn: false };
     }
     return { playable: false, isJumpIn: false };
   }
@@ -470,6 +483,15 @@ export function applyPlayCard(
       `${actor.nickname} jatuhkan Wild +4 ke warna ${COLOR_META[nextActiveColor].name}! Total hukuman +${nextPendingDraw}!`,
       { actorToken: playerToken, shake: true }
     );
+  } else if (isMegaDraw(card.value)) {
+    const amount = getDrawAmount(card.value);
+    nextPendingDraw = state.pendingDraw + amount;
+    nextPendingFrom = playerToken;
+    event = makeEvent(
+      "wild4",
+      `SUPER +${amount}! ${actor.nickname} meledakkan meja ke warna ${COLOR_META[nextActiveColor].name}! Total hukuman +${nextPendingDraw}!`,
+      { actorToken: playerToken, shake: true }
+    );
   } else if (card.value === "z_shield") {
     if (state.pendingDraw > 0 && state.pendingDrawFromToken) {
       // Reflect the incoming penalty straight back to the sender!
@@ -587,7 +609,7 @@ export function applyPlayCard(
   if (
     remainingAfterPlay > 0 &&
     nextPendingDraw > 0 &&
-    (card.value === "draw2" || card.value === "wild4")
+    getDrawAmount(card.value) > 0
   ) {
     const targetPlayer = nextPlayers[nextTurnIndex];
     if (targetPlayer && targetPlayer.hasShield && targetPlayer.token !== playerToken) {

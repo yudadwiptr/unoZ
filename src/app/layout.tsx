@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fredoka, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import "./skins.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",

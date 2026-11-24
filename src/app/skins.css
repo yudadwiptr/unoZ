@@ -1,0 +1,338 @@
+/* ==================================================================
+   unoZ card skins
+   Cards carry data-skin + semantic hooks (.uz-card .uz-c-<kind> .uz-clip
+   .uz-tex .uz-rays .uz-gloss .uz-shade .uz-frame .uz-medal .uz-glyph
+   .uz-corner .uz-ribbon .uz-wordmark). "klasik" uses the Tailwind
+   classes as-is; every other skin overrides them here. These rules are
+   unlayered, so they win over Tailwind utilities without !important.
+   ================================================================== */
+
+/* ---------- Super draw cards (+6 / +8 / +10), all skins ---------- */
+@keyframes mega-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.92); }
+  50% { opacity: 0.95; transform: scale(1.08); }
+}
+.card-mega-pulse {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 90, 40, 0.6), transparent 62%);
+  mix-blend-mode: screen;
+  animation: mega-pulse 1.3s ease-in-out infinite;
+}
+
+/* ==================================================================
+   NUSANTARA — batik kawung, gold leaf, tumpal border
+   ================================================================== */
+[data-skin="nusantara"].uz-card {
+  --b1: #a32626;
+  --b2: #5a0f0f;
+  --ink: #7a1414;
+  background: radial-gradient(130% 90% at 50% 0%, var(--b1) 0%, var(--b2) 78%);
+  border-color: #e6b85c;
+  color: #f7dfa0;
+}
+[data-skin="nusantara"].uz-c-biru { --b1: #2a52a0; --b2: #0f1f45; --ink: #1e3a6e; }
+[data-skin="nusantara"].uz-c-kuning { --b1: #e8b54a; --b2: #a26a0c; --ink: #8a5a08; color: #3b2410; }
+[data-skin="nusantara"].uz-c-hijau { --b1: #24855f; --b2: #0b3a27; --ink: #145238; }
+[data-skin="nusantara"].uz-c-wild { --b1: #4a2e18; --b2: #140a04; --ink: #3b2410; }
+[data-skin="nusantara"].uz-c-zswap { --b1: #7a3380; --b2: #2a0b2c; --ink: #4a1550; }
+[data-skin="nusantara"].uz-c-zshield { --b1: #177a82; --b2: #062a2d; --ink: #0b4a50; }
+[data-skin="nusantara"].uz-c-mega { --b1: #9a1414; --b2: #1a0303; --ink: #7a1010; }
+
+[data-skin="nusantara"] .uz-tex {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%23f3d08a' stroke-opacity='0.5' stroke-width='1'%3E%3Cellipse cx='6' cy='6' rx='6.3' ry='3' transform='rotate(45 6 6)'/%3E%3Cellipse cx='18' cy='18' rx='6.3' ry='3' transform='rotate(45 18 18)'/%3E%3Cellipse cx='18' cy='6' rx='6.3' ry='3' transform='rotate(-45 18 6)'/%3E%3Cellipse cx='6' cy='18' rx='6.3' ry='3' transform='rotate(-45 6 18)'/%3E%3C/g%3E%3Ccircle cx='12' cy='12' r='1.3' fill='%23f3d08a' fill-opacity='0.75'/%3E%3Ccircle cx='0' cy='0' r='1.3' fill='%23f3d08a' fill-opacity='0.75'/%3E%3Ccircle cx='24' cy='0' r='1.3' fill='%23f3d08a' fill-opacity='0.75'/%3E%3Ccircle cx='0' cy='24' r='1.3' fill='%23f3d08a' fill-opacity='0.75'/%3E%3Ccircle cx='24' cy='24' r='1.3' fill='%23f3d08a' fill-opacity='0.75'/%3E%3C/svg%3E");
+  background-size: 18px 18px;
+  opacity: 0.9;
+}
+[data-skin="nusantara"] .uz-rays {
+  background: radial-gradient(circle at 50% 50%, rgba(243, 208, 138, 0.4) 0%, transparent 58%);
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+[data-skin="nusantara"] .uz-gloss { opacity: 0.45; }
+[data-skin="nusantara"] .uz-frame {
+  border-color: rgba(243, 208, 138, 0.6);
+  box-shadow: inset 0 0 0 2px rgba(58, 20, 8, 0.35), inset 0 0 0 3px rgba(243, 208, 138, 0.3);
+}
+/* Tumpal (triangle) bands top & bottom */
+[data-skin="nusantara"] .uz-frame::before,
+[data-skin="nusantara"] .uz-frame::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  height: 7px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M0 7 L5 0 L10 7 Z' fill='%23e6b85c' fill-opacity='0.7'/%3E%3C/svg%3E") repeat-x;
+  background-size: 9px 7px;
+}
+[data-skin="nusantara"] .uz-frame::before { top: 3px; transform: scaleY(-1); }
+[data-skin="nusantara"] .uz-frame::after { bottom: 3px; }
+
+[data-skin="nusantara"] .uz-medal {
+  background: radial-gradient(circle at 35% 30%, #fffaf0 0%, #f4e1b5 55%, #dcb86c 100%);
+  box-shadow:
+    inset 0 0 0 2px #b8862b,
+    inset 0 0 0 4px #fff3d6,
+    inset 0 0 0 5px #b8862b,
+    0 4px 10px -2px rgba(30, 10, 0, 0.6);
+}
+[data-skin="nusantara"] .uz-glyph,
+[data-skin="nusantara"] .uz-glyph * { color: var(--ink); }
+[data-skin="nusantara"] .uz-glyph .card-ink {
+  -webkit-text-stroke: 0.05em #3b2410;
+  text-shadow: 0 0.07em 0 #c8922f;
+}
+[data-skin="nusantara"] .uz-glyph .card-icon-ink {
+  filter: drop-shadow(0 2px 0 #c8922f);
+}
+[data-skin="nusantara"] .uz-corner { text-shadow: 0 1px 0 rgba(40, 14, 0, 0.7); }
+[data-skin="nusantara"] .uz-ribbon {
+  background: #3b2410;
+  color: #f3d08a;
+  border: 1px solid #b8862b;
+}
+
+/* Back */
+[data-skin="nusantara"].uz-back {
+  --ink: #7a1d14;
+  background: radial-gradient(circle at 50% 45%, #8a2418 0%, #2a0c06 78%);
+  border-color: #e6b85c;
+}
+[data-skin="nusantara"].uz-back .uz-frame2 { border-color: rgba(243, 208, 138, 0.35); border-style: solid; }
+[data-skin="nusantara"] .uz-wordmark { color: #f3d08a; text-shadow: 0 1px 0 #3b2410; }
+[data-skin="nusantara"] .uz-wordmark span { color: #fff3d6; }
+
+/* ==================================================================
+   CYBERPUNK — neon tubes, scanlines, synthwave floor, glitch
+   ================================================================== */
+[data-skin="cyber"].uz-card {
+  --neon: #ff2a6d;
+  background:
+    radial-gradient(120% 70% at 50% 118%, color-mix(in srgb, var(--neon) 45%, transparent) 0%, transparent 62%),
+    linear-gradient(165deg, #171726 0%, #07070c 100%);
+  border-color: var(--neon);
+  color: var(--neon);
+}
+[data-skin="cyber"].uz-c-biru { --neon: #05d9e8; }
+[data-skin="cyber"].uz-c-kuning { --neon: #f9f002; }
+[data-skin="cyber"].uz-c-hijau { --neon: #39ff14; }
+[data-skin="cyber"].uz-c-wild { --neon: #b967ff; }
+[data-skin="cyber"].uz-c-zswap { --neon: #ff00ff; }
+[data-skin="cyber"].uz-c-zshield { --neon: #00fff0; }
+[data-skin="cyber"].uz-c-mega { --neon: #ff3131; }
+[data-skin="cyber"].uz-back { --neon: #b967ff; }
+
+/* Outer neon bloom */
+[data-skin="cyber"].uz-card::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--neon) 70%, transparent),
+    0 0 26px color-mix(in srgb, var(--neon) 28%, transparent);
+}
+[data-skin="cyber"] .uz-tex {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 3px),
+    linear-gradient(color-mix(in srgb, var(--neon) 10%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--neon) 10%, transparent) 1px, transparent 1px);
+  background-size: auto, 10px 10px, 10px 10px;
+  opacity: 1;
+}
+[data-skin="cyber"] .uz-rays {
+  inset: 60% -45% -25% -45%;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--neon) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--neon) 55%, transparent) 1px, transparent 1px);
+  background-size: 14px 14px;
+  transform: perspective(70px) rotateX(58deg);
+  transform-origin: top center;
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 55%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 55%);
+}
+[data-skin="cyber"] .uz-gloss { display: none; }
+[data-skin="cyber"] .uz-frame {
+  border-color: color-mix(in srgb, var(--neon) 35%, transparent);
+}
+/* HUD corner brackets */
+[data-skin="cyber"] .uz-frame::before,
+[data-skin="cyber"] .uz-frame::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 0 solid var(--neon);
+}
+[data-skin="cyber"] .uz-frame::before { top: 2px; right: 2px; border-top-width: 2px; border-right-width: 2px; }
+[data-skin="cyber"] .uz-frame::after { bottom: 2px; left: 2px; border-bottom-width: 2px; border-left-width: 2px; }
+
+[data-skin="cyber"] .uz-medal {
+  background: linear-gradient(145deg, #1d1d30 0%, #08080e 100%);
+  box-shadow:
+    inset 0 0 0 2px var(--neon),
+    inset 0 0 12px color-mix(in srgb, var(--neon) 40%, transparent),
+    0 0 14px color-mix(in srgb, var(--neon) 60%, transparent);
+}
+@keyframes cyber-glitch {
+  0%, 88%, 100% { transform: none; }
+  89% { transform: translate(-2px, 0) skewX(-12deg); }
+  91% { transform: translate(2px, -1px) skewX(10deg); }
+  93% { transform: translate(-1px, 1px); }
+}
+[data-skin="cyber"] .uz-glyph {
+  animation: cyber-glitch 3.4s steps(1) infinite;
+}
+[data-skin="cyber"] .uz-glyph,
+[data-skin="cyber"] .uz-glyph * {
+  color: color-mix(in srgb, var(--neon) 30%, #ffffff);
+}
+[data-skin="cyber"] .uz-glyph .card-ink {
+  -webkit-text-stroke: 0;
+  text-shadow:
+    0 0 4px var(--neon),
+    0 0 12px var(--neon),
+    -2px 0 rgba(255, 42, 109, 0.75),
+    2px 0 rgba(5, 217, 232, 0.75);
+}
+[data-skin="cyber"] .uz-glyph .card-icon-ink {
+  filter:
+    drop-shadow(0 0 3px var(--neon))
+    drop-shadow(0 0 8px var(--neon))
+    drop-shadow(-1.5px 0 rgba(255, 42, 109, 0.8))
+    drop-shadow(1.5px 0 rgba(5, 217, 232, 0.8));
+}
+[data-skin="cyber"] .uz-corner {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  text-shadow: 0 0 6px var(--neon);
+}
+[data-skin="cyber"] .uz-ribbon {
+  background: rgba(0, 0, 0, 0.75);
+  color: var(--neon);
+  border: 1px solid var(--neon);
+  border-radius: 3px;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+[data-skin="cyber"] .uz-wordmark {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  color: #fff;
+  text-shadow: 0 0 6px var(--neon), 0 0 14px var(--neon);
+}
+[data-skin="cyber"] .uz-wordmark span { color: #05d9e8; }
+[data-skin="cyber"].uz-back .uz-frame2 { border-color: color-mix(in srgb, var(--neon) 25%, transparent); }
+
+/* ==================================================================
+   KOTA LIAR — street poster: split color, halftone, skyline, road sign
+   ================================================================== */
+[data-skin="street"].uz-card {
+  --c: #ef3b36;
+  --c2: #a3141c;
+  background: linear-gradient(168deg, var(--c) 0 56%, var(--c2) 56.5% 100%);
+  border-color: #111111;
+  color: #ffffff;
+}
+[data-skin="street"].uz-c-biru { --c: #2176d2; --c2: #0c3b7a; }
+[data-skin="street"].uz-c-kuning { --c: #ffc93c; --c2: #e08e0b; }
+[data-skin="street"].uz-c-hijau { --c: #2fb36b; --c2: #0f6b3a; }
+[data-skin="street"].uz-c-wild { --c: #ffd400; --c2: #1b1b1b; background: linear-gradient(168deg, #3a3a3a 0 56%, #161616 56.5% 100%); }
+[data-skin="street"].uz-c-zswap { --c: #b98bff; --c2: #3b1278; background: linear-gradient(168deg, #8a3ffc 0 56%, #3b1278 56.5% 100%); }
+[data-skin="street"].uz-c-zshield { --c: #5ef0e4; --c2: #0b5e57; background: linear-gradient(168deg, #10b5a8 0 56%, #0b5e57 56.5% 100%); }
+[data-skin="street"].uz-c-mega {
+  --c: #ffd400;
+  background: repeating-linear-gradient(-45deg, #161616 0 9px, #ffd400 9px 18px);
+}
+
+[data-skin="street"] .uz-tex {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.32) 0.9px, transparent 1.35px);
+  background-size: 5px 5px;
+  opacity: 1;
+  mask-image: linear-gradient(to bottom, transparent 30%, #000 75%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 30%, #000 75%);
+}
+/* City skyline silhouette */
+[data-skin="street"] .uz-rays {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40' viewBox='0 0 120 40' preserveAspectRatio='none'%3E%3Cpath fill='%23000' fill-opacity='0.45' d='M0 40V24H8V16H16V28H22V12H32V26H38V18H46V8H52V20H60V30H66V14H76V24H82V10H90V22H98V16H106V28H112V20H120V40Z'/%3E%3C/svg%3E") bottom / 100% 32% repeat-x;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+/* Low sun / street light glow */
+[data-skin="street"] .uz-gloss {
+  inset: -18% -28% auto auto;
+  width: 80%;
+  height: 55%;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 65%);
+}
+[data-skin="street"] .uz-shade { display: none; }
+[data-skin="street"] .uz-frame { border: 2px solid rgba(255, 255, 255, 0.92); }
+[data-skin="street"].uz-c-mega .uz-tex,
+[data-skin="street"].uz-c-mega .uz-rays { display: none; }
+
+/* Black road-sign diamond */
+[data-skin="street"] .uz-medal {
+  background: #111111;
+  box-shadow:
+    inset 0 0 0 2px #ffffff,
+    inset 0 0 0 4px #111111,
+    3px 4px 0 rgba(0, 0, 0, 0.35);
+}
+[data-skin="street"] .uz-glyph { transform: skewX(-8deg); }
+[data-skin="street"] .uz-glyph,
+[data-skin="street"] .uz-glyph * { color: var(--c); }
+[data-skin="street"] .uz-glyph .card-ink {
+  font-family: Impact, "Arial Black", "Helvetica Neue", sans-serif;
+  font-weight: 900;
+  -webkit-text-stroke: 0;
+  text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.9);
+  letter-spacing: -0.02em;
+}
+[data-skin="street"] .uz-glyph .card-icon-ink {
+  filter: drop-shadow(2px 2px 0 rgba(255, 255, 255, 0.9));
+}
+[data-skin="street"] .uz-corner {
+  font-family: Impact, "Arial Black", sans-serif;
+  font-weight: 900;
+  text-shadow: 1.5px 1.5px 0 #111111;
+}
+[data-skin="street"] .uz-ribbon {
+  background: #111111;
+  color: #ffd400;
+  border-radius: 2px;
+  font-family: Impact, "Arial Black", sans-serif;
+  letter-spacing: 0.04em;
+}
+
+/* Back: asphalt with double yellow line */
+[data-skin="street"].uz-back {
+  --c: #ffd400;
+  background: #232323;
+  border-color: #111111;
+}
+[data-skin="street"].uz-back .uz-rays {
+  background: linear-gradient(90deg, transparent 44%, #ffd400 44% 47.5%, transparent 47.5% 52.5%, #ffd400 52.5% 56%, transparent 56%);
+}
+[data-skin="street"].uz-back .uz-tex {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
+  mask-image: none;
+  -webkit-mask-image: none;
+  opacity: 0.6;
+}
+[data-skin="street"].uz-back .uz-frame { border-color: rgba(255, 255, 255, 0.85); }
+[data-skin="street"].uz-back .uz-frame2 { border-color: rgba(255, 255, 255, 0.35); }
+[data-skin="street"] .uz-wordmark {
+  font-family: Impact, "Arial Black", sans-serif;
+  letter-spacing: 0.06em;
+  text-shadow: none;
+  background: #111111;
+  padding: 2px 5px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+[data-skin="street"] .uz-wordmark span { color: #ffd400; }
+
+@media (prefers-reduced-motion: reduce) {
+  .card-mega-pulse,
+  [data-skin="cyber"] .uz-glyph {
+    animation: none !important;
+  }
+}

@@ -323,18 +323,15 @@ export function LobbyScreen({
 
         {/* ===== Settings ===== */}
         <section className="lg:col-span-7 xl:col-span-8 rounded-3xl glass-panel p-4 sm:p-5 lg:p-6 flex flex-col gap-5">
-          <div className="flex items-center justify-between">
+          {isHost && (
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-fuchsia-500" />
               <h2 className="font-display font-bold text-lg text-slate-900 dark:text-white">Pengaturan Permainan</h2>
             </div>
-            {!isHost && (
-              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                Diatur oleh Ketua Room
-              </span>
-            )}
-          </div>
+          )}
 
+          {isHost ? (
+          <>
           {/* Mode cards */}
           <div className="space-y-2">
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -452,6 +449,9 @@ export function LobbyScreen({
               })}
             </div>
           </div>
+
+          </>
+          ) : null}
 
           {/* Card skin (per viewer) */}
           <SkinPicker />

@@ -7,6 +7,8 @@ import type { CardColor } from "@/types/game";
 interface AnimatedBackgroundProps {
   /** "vivid" for Landing & Lobby; "subtle" for the active Game Board so focus stays on real cards */
   variant?: "vivid" | "subtle";
+  /** Outlined suit-symbol wallpaper (landing only — too busy behind lobby & table) */
+  showPattern?: boolean;
   /** Active card color during a game — tints the table felt */
   tint?: CardColor;
 }
@@ -202,7 +204,7 @@ function FloatingCardGlyph({ label }: { label: FloatingCardConfig["label"] }) {
   }
 }
 
-export function AnimatedBackground({ variant = "vivid", tint }: AnimatedBackgroundProps) {
+export function AnimatedBackground({ variant = "vivid", tint, showPattern = true }: AnimatedBackgroundProps) {
   const isGame = variant === "subtle";
 
   return (
@@ -237,7 +239,9 @@ export function AnimatedBackground({ variant = "vivid", tint }: AnimatedBackgrou
       />
 
       {/* Outlined suit-symbol wallpaper, faded toward the edges */}
-      <div className="absolute inset-0 bg-symbol-pattern arcade-grid-mask opacity-50 dark:opacity-60" />
+      {showPattern && (
+        <div className="absolute inset-0 bg-symbol-pattern arcade-grid-mask opacity-50 dark:opacity-60" />
+      )}
 
       {isGame ? (
         <>

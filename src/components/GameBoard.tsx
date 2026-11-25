@@ -3,7 +3,6 @@
 import {
   AlertTriangle,
   ArrowRightCircle,
-  BookOpen,
   Bot,
   LogOut,
   MessageCircle,
@@ -72,7 +71,6 @@ export function GameBoard({
   onSendEmote,
   onPlayAgain,
   onBackToLobby,
-  onOpenRules,
 }: GameBoardProps) {
   const [pendingWildCard, setPendingWildCard] = useState<Card | null>(null);
   const [showEmoteBar, setShowEmoteBar] = useState<boolean>(true);
@@ -183,14 +181,6 @@ export function GameBoard({
         </div>
 
         <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={onOpenRules}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-panel text-xs font-bold text-slate-700 dark:text-slate-200 hover:brightness-105 transition cursor-pointer"
-          >
-            <BookOpen className="w-3.5 h-3.5 text-amber-500" />
-            <span className="hidden xs:inline">Cara Main</span>
-          </button>
           <button
             type="button"
             onClick={onBackToLobby}

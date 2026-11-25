@@ -72,6 +72,7 @@ export function UnozApp() {
       {/* Vibrant Multi-Layer Arcade Background (Full Vivid on Landing & Lobby, Subtle during Game) */}
       <AnimatedBackground
         variant={game.screen === "game" ? "subtle" : "vivid"}
+        showPattern={game.screen === "landing"}
         tint={game.screen === "game" ? game.publicState?.activeColor : undefined}
       />
 

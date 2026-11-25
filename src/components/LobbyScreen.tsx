@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowRight,
   Bot,
   Copy,
   Crown,
@@ -157,7 +158,7 @@ export function LobbyScreen({
     <div className="w-full max-w-7xl mx-auto px-4 lg:px-6 pt-3 pb-10 space-y-4 lg:space-y-5">
       {/* ===== Room banner ===== */}
       <div className="relative overflow-hidden rounded-3xl glass-panel px-4 py-4 sm:px-6 sm:py-5">
-        <div className="pointer-events-none absolute -right-16 -top-24 w-72 h-72 rounded-full bg-amber-400/15 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 -top-24 w-72 h-72 rounded-full" style={{ background: "radial-gradient(circle, rgba(251,191,36,0.18), transparent 70%)" }} />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4 sm:gap-5 min-w-0">
             <UnozLogo size="sm" />
@@ -456,35 +457,116 @@ export function LobbyScreen({
           <SkinPicker />
 
           {/* Start */}
-          <div className="mt-auto pt-1 pb-1.5">
-            {isHost ? (
+          <div className="mt-auto pt-3">
+            {isHost && canStart && (
               <button
                 type="button"
-                disabled={!canStart}
                 onClick={onStartGame}
-                className="btn-3d btn-3d-green w-full py-4 px-6 rounded-2xl bg-gradient-to-b from-emerald-300 to-emerald-600 text-slate-950 inline-flex items-center justify-center gap-3 cursor-pointer"
+                className="tile-btn tile-green group w-full mb-2 p-3.5 sm:p-4 pr-4 sm:pr-5 flex items-center gap-3.5 sm:gap-4 text-left text-slate-950 cursor-pointer"
               >
-                <span className="w-11 h-11 rounded-xl bg-slate-950/90 text-emerald-300 flex items-center justify-center">
-                  <Play className="w-6 h-6 fill-emerald-300" />
+                <span className="tile-icon shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center">
+                  <Play className="w-7 h-7 sm:w-8 sm:h-8 fill-current transition-transform duration-300 group-hover:scale-110" />
                 </span>
-                <span className="text-left leading-tight">
-                  <span className="block font-display font-bold text-xl">
-                    {canStart ? "Mulai Main" : "Minimal 2 Pemain"}
+                <span className="flex-1 min-w-0">
+                  <span className="block font-display font-bold text-[1.7rem] sm:text-3xl leading-none tracking-tight">
+                    Mulai Main
                   </span>
-                  <span className="block text-[11px] font-bold text-slate-900/70">
+                  <span className="block mt-1.5 text-xs sm:text-sm font-bold text-slate-900/70 truncate">
                     {activeMode.title}
                     {isCustom ? " (Kustom)" : ""} • {players.length} pemain siap
                   </span>
                 </span>
-              </button>
-            ) : (
-              <div className="w-full py-4 px-5 rounded-2xl bg-slate-200/80 dark:bg-white/10 text-center text-sm font-bold text-slate-600 dark:text-slate-300 inline-flex items-center justify-center gap-2">
-                <span className="turn-dots inline-flex gap-1" aria-hidden="true">
-                  <span />
-                  <span />
-                  <span />
+                {/* Seated players peeking over the top edge */}
+                <span className="pointer-events-none absolute right-20 -top-5 hidden sm:flex -space-x-3" aria-hidden="true">
+                  {players.slice(0, 5).map((p, i) => (
+                    <span
+                      key={p.token}
+                      className="transition-transform duration-300 group-hover:-translate-y-1.5"
+                      style={{ transitionDelay: `${i * 35}ms`, rotate: `${(i % 2 === 0 ? -1 : 1) * 6}deg` }}
+                    >
+                      <AvatarBadge
+                        avatarId={p.avatar}
+                        size="md"
+                        className="border-[3px] border-white shadow-[0_3px_0_rgba(0,0,0,0.3)]"
+                      />
+                    </span>
+                  ))}
+                  {players.length > 5 && (
+                    <span className="w-10 h-10 rounded-xl bg-[#0b1020] text-emerald-300 border-[3px] border-white flex items-center justify-center font-display font-bold text-sm">
+                      +{players.length - 5}
+                    </span>
+                  )}
                 </span>
-                Menunggu Ketua Room menekan Mulai Main
+                <span className="tile-key shrink-0 w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center">
+                  <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[3]" />
+                </span>
+              </button>
+            )}
+
+            {isHost && !canStart && (
+              <div className="wait-panel rounded-[1.75rem] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+                {/* Seat pips: you + the empty seat you still need */}
+                <div className="flex items-center gap-2 shrink-0" aria-hidden="true">
+                  {players[0] && (
+                    <AvatarBadge
+                      avatarId={players[0].avatar}
+                      size="lg"
+                      className="border-[3px] border-white dark:border-slate-800 shadow-[0_3px_0_rgba(0,0,0,0.25)]"
+                    />
+                  )}
+                  <span className="font-display font-bold text-amber-500">+</span>
+                  <span className="w-12 h-12 rounded-2xl border-[3px] border-dashed border-amber-400/80 flex items-center justify-center font-display font-bold text-xl text-amber-500 animate-pulse">
+                    ?
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-display font-bold text-lg sm:text-xl text-slate-900 dark:text-white leading-tight">
+                    Butuh {2 - players.length} pemain lagi
+                  </p>
+                  <p className="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    Tambah bot untuk langsung main, atau bagikan link ke teman.
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={onAddBot}
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-display font-bold text-sm shadow-[0_4px_0_#1e40af] active:translate-y-1 active:shadow-none transition cursor-pointer"
+                  >
+                    <Bot className="w-4 h-4" />
+                    Tambah Bot
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onCopyLink}
+                    title="Salin link undangan"
+                    aria-label="Salin link undangan"
+                    className="inline-flex items-center justify-center w-11 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-[0_4px_0_rgba(15,23,42,0.45)] active:translate-y-1 active:shadow-none transition cursor-pointer"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!isHost && (
+              <div className="wait-panel rounded-[1.75rem] p-4 sm:p-5 flex items-center gap-4">
+                <span className="relative shrink-0 w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center shadow-[0_3px_0_#b45309]">
+                  <Crown className="w-6 h-6" />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-display font-bold text-lg text-slate-900 dark:text-white leading-tight inline-flex items-center gap-2">
+                    Menunggu Ketua Room
+                    <span className="turn-dots inline-flex gap-1 text-amber-500" aria-hidden="true">
+                      <span />
+                      <span />
+                      <span />
+                    </span>
+                  </p>
+                  <p className="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    Sambil nunggu, pilih skin kartu favoritmu di atas.
+                  </p>
+                </div>
               </div>
             )}
           </div>

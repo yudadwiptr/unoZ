@@ -477,6 +477,100 @@ html:not(.dark) .bg-sunrays {
 .btn-3d-blue { --btn-edge: #1e3a8a; --btn-glow: rgba(59, 130, 246, 0.55); }
 .btn-3d-green { --btn-edge: #047857; --btn-glow: rgba(16, 185, 129, 0.55); }
 
+/* ============================================================
+   Action tiles — the big "Buat Room / Gabung Room / Mulai Main"
+   buttons. A printed card face (symbol pattern + inner frame) on a
+   thick pressable base, with props (cards / code tiles / avatars)
+   peeking over the top edge.
+   ============================================================ */
+.tile-btn {
+  --face1: #fde68a;
+  --face2: #f59e0b;
+  --edge: #b45309;
+  --glow: rgba(245, 158, 11, 0.5);
+  --key: #fbbf24;
+  position: relative;
+  isolation: isolate;
+  border-radius: 1.75rem;
+  background: linear-gradient(180deg, var(--face1) 0%, var(--face2) 100%);
+  box-shadow:
+    0 8px 0 var(--edge),
+    0 26px 44px -18px var(--glow),
+    inset 0 2px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+  transition: transform 0.16s cubic-bezier(0.3, 0.7, 0.4, 1.5), box-shadow 0.16s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.tile-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.6'%3E%3Cpath d='M12 5l1.9 4.1 4.6.6-3.3 3.2.8 4.5L12 15.3l-4 2.1.8-4.5-3.3-3.2 4.6-.6z'/%3E%3Ccircle cx='36' cy='12' r='5'/%3E%3Cpath d='M36 30l6.5 11h-13z'/%3E%3Crect x='7' y='31' width='10' height='10' rx='2'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 56px 56px;
+  opacity: 0.13;
+  mask-image: linear-gradient(100deg, transparent 18%, #000 70%);
+  -webkit-mask-image: linear-gradient(100deg, transparent 18%, #000 70%);
+}
+.tile-btn::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: calc(1.75rem - 6px);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+}
+.tile-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow:
+    0 11px 0 var(--edge),
+    0 32px 50px -18px var(--glow),
+    inset 0 2px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+}
+.tile-btn:active:not(:disabled) {
+  transform: translateY(6px);
+  box-shadow:
+    0 2px 0 var(--edge),
+    0 10px 20px -14px var(--glow),
+    inset 0 2px 0 rgba(255, 255, 255, 0.5);
+}
+.tile-btn:focus-visible {
+  outline: 3px solid #38bdf8;
+  outline-offset: 4px;
+}
+.tile-blue { --face1: #7dd3fc; --face2: #2563eb; --edge: #1e3a8a; --glow: rgba(37, 99, 235, 0.55); --key: #7dd3fc; }
+.tile-green { --face1: #a7f3d0; --face2: #10b981; --edge: #047857; --glow: rgba(16, 185, 129, 0.55); --key: #6ee7b7; }
+
+/* Dark square holding the main glyph */
+.tile-icon {
+  background: #0b1020;
+  color: var(--key);
+  box-shadow: inset 0 -3px 0 rgba(255, 255, 255, 0.08), 0 3px 0 rgba(0, 0, 0, 0.25);
+}
+/* Round arrow key on the right */
+.tile-key {
+  background: #0b1020;
+  color: var(--key);
+  box-shadow: inset 0 -3px 0 rgba(255, 255, 255, 0.1), 0 3px 0 rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s cubic-bezier(0.3, 0.7, 0.4, 1.6);
+}
+.tile-btn:hover .tile-key { transform: translateX(4px) rotate(-8deg); }
+
+/* Waiting-for-players panel (replaces a dead disabled button) */
+.wait-panel {
+  border: 2px dashed rgba(251, 191, 36, 0.55);
+  background:
+    repeating-linear-gradient(-45deg, rgba(251, 191, 36, 0.06) 0 12px, transparent 12px 24px),
+    rgba(15, 23, 42, 0.04);
+}
+.dark .wait-panel {
+  background:
+    repeating-linear-gradient(-45deg, rgba(251, 191, 36, 0.07) 0 12px, transparent 12px 24px),
+    rgba(2, 6, 23, 0.35);
+}
+
 /* Turn loader: a bright arc running around the active player's chip */
 @property --loader-angle {
   syntax: "<angle>";

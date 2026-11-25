@@ -21,7 +21,6 @@ import React from "react";
 import { AvatarBadge } from "@/components/AvatarIcon";
 import { SkinPicker } from "@/components/SkinPicker";
 import { UnoCard } from "@/components/UnoCard";
-import { UnozLogo } from "@/components/UnozLogo";
 import {
   DEFAULT_CHAOS_SETTINGS,
   DEFAULT_KLASIK_SETTINGS,
@@ -161,8 +160,6 @@ export function LobbyScreen({
         <div className="pointer-events-none absolute -right-16 -top-24 w-72 h-72 rounded-full" style={{ background: "radial-gradient(circle, rgba(251,191,36,0.18), transparent 70%)" }} />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4 sm:gap-5 min-w-0">
-            <UnozLogo size="sm" />
-            <div className="h-10 w-px bg-slate-200 dark:bg-white/15 hidden sm:block" />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -201,7 +198,7 @@ export function LobbyScreen({
               className="btn-3d btn-3d-blue flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-b from-sky-400 to-blue-600 text-white font-display font-bold text-sm sm:text-base cursor-pointer"
             >
               <Copy className="w-4 h-4" />
-              Salin Link Undangan
+              Undang
             </button>
             <button
               type="button"

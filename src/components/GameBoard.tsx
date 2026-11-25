@@ -4,7 +4,6 @@ import {
   AlertTriangle,
   ArrowRightCircle,
   Bot,
-  LogOut,
   MessageCircle,
   RotateCcw,
   RotateCw,
@@ -22,7 +21,6 @@ import { ColorSymbol, UnoCard, UnoCardBack } from "@/components/UnoCard";
 import { WinnerPodiumModal } from "@/components/WinnerPodiumModal";
 import {
   COLOR_META,
-  MODE_LABEL,
   getCardDisplayName,
   QUICK_EMOTES,
 } from "@/lib/constants";
@@ -169,32 +167,9 @@ export function GameBoard({
         }`}
       />
 
-      {/* TOP BAR: Compact Room Info & Quick Controls */}
-      <div className="w-full max-w-5xl mx-auto px-3 pt-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="px-2.5 py-1 rounded-xl glass-panel text-xs font-display font-bold tracking-wider text-slate-800 dark:text-slate-100">
-            #{gameState.roomCode}
-          </span>
-          <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-200/70 dark:bg-white/10 text-[11px] font-bold text-slate-600 dark:text-slate-300">
-            {MODE_LABEL[gameState.settings.mode] ?? "Klasik"}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={onBackToLobby}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 text-xs font-bold hover:bg-rose-500/25 transition cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Lobby</span>
-          </button>
-        </div>
-      </div>
-
       {/* OPPONENTS STRIP */}
-      <div className="w-full max-w-5xl mx-auto px-3 pt-2">
-        <div className="no-scrollbar flex items-start justify-start sm:justify-center gap-2.5 overflow-x-auto pb-2 pt-2">
+      <div className="w-full max-w-5xl mx-auto px-3">
+        <div className="no-scrollbar flex items-start justify-start sm:justify-center gap-2 overflow-x-auto px-1 pt-2.5 pb-4">
           {opponents.map((opp) => {
             const isTurn =
               activePlayer?.token === opp.token && gameState.status === "playing";
@@ -210,17 +185,15 @@ export function GameBoard({
             return (
               <div
                 key={opp.token}
-                className={`relative shrink-0 w-28 sm:w-32 rounded-2xl p-2.5 transition-all duration-300 ${
-                  isTurn
-                    ? "glass-panel shadow-lg shadow-amber-500/20 scale-[1.03]"
-                    : "glass-panel opacity-90"
+                className={`relative shrink-0 flex items-center gap-2 rounded-full glass-panel pl-1 pr-3 py-1 transition-all duration-300 ${
+                  isTurn ? "shadow-lg shadow-amber-500/25" : "opacity-90"
                 }`}
               >
                 {/* Running turn loader around the active player's chip */}
                 {isTurn && (
                   <span
                     aria-hidden="true"
-                    className="turn-loader pointer-events-none absolute -inset-[3px] rounded-[1.1rem]"
+                    className="turn-loader pointer-events-none absolute -inset-[3px] rounded-full"
                   />
                 )}
 
@@ -235,61 +208,33 @@ export function GameBoard({
                   </div>
                 )}
 
-                <div className="flex items-center gap-2">
-                  <div className="relative shrink-0">
-                    <AvatarBadge
-                      avatarId={opp.avatar}
-                      size="sm"
-                      className={`w-9 h-9 ${isTurn ? "ring-2 ring-amber-400" : ""}`}
-                    />
-                    {!opp.isOnline && (
-                      <span
-                        title="Terputus"
-                        className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white flex items-center justify-center"
-                      >
-                        <WifiOff className="w-2.5 h-2.5" />
-                      </span>
-                    )}
-                    {opp.hasShield && (
-                      <span
-                        title="Tameng Z-Shield Aktif"
-                        className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-cyan-400 text-slate-950 flex items-center justify-center shadow"
-                      >
-                        <Shield className="w-2.5 h-2.5" />
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold text-xs text-slate-900 dark:text-white truncate">
-                      {opp.nickname}
-                    </p>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      {opp.isBot && (
-                        <Bot className="w-3 h-3 text-sky-500 shrink-0" />
-                      )}
-                      <span
-                        className={`text-[11px] font-extrabold ${
-                          opp.cardCount === 1
-                            ? "text-rose-500 dark:text-rose-400"
-                            : "text-slate-500 dark:text-slate-400"
-                        }`}
-                      >
-                        {opp.cardCount} kartu
-                      </span>
-                    </div>
-                  </div>
+                <div className="relative shrink-0">
+                  <AvatarBadge avatarId={opp.avatar} size="sm" className="w-8 h-8 rounded-full" />
+                  {!opp.isOnline && (
+                    <span
+                      title="Terputus"
+                      className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white flex items-center justify-center"
+                    >
+                      <WifiOff className="w-2.5 h-2.5" />
+                    </span>
+                  )}
+                  {opp.hasShield && (
+                    <span
+                      title="Tameng Z-Shield Aktif"
+                      className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-cyan-400 text-slate-950 flex items-center justify-center shadow"
+                    >
+                      <Shield className="w-2.5 h-2.5" />
+                    </span>
+                  )}
                 </div>
 
-                {/* Status Badges */}
-                <div className="mt-2 flex items-center justify-between gap-1">
-                  {opp.cardCount === 1 && opp.unozCalled ? (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-extrabold">
-                      unoZ! Aman
-                    </span>
-                  ) : isTurn ? (
-                    <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold text-amber-600 dark:text-amber-300">
-                      {opp.isBot ? "Mikir" : "Giliran"}
+                <div className="min-w-0 leading-tight">
+                  <p className="max-w-[5.5rem] sm:max-w-[7rem] truncate font-bold text-xs text-slate-900 dark:text-white">
+                    {opp.nickname}
+                  </p>
+                  {isTurn ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-amber-600 dark:text-amber-300">
+                      {opp.isBot ? "Mikir" : "Jalan"}
                       <span className="turn-dots inline-flex gap-0.5" aria-hidden="true">
                         <span />
                         <span />
@@ -297,21 +242,39 @@ export function GameBoard({
                       </span>
                     </span>
                   ) : (
-                    <span className="text-[10px] text-slate-400 font-semibold">
-                      {opp.isOnline ? "Menunggu" : "Terputus"}
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                      {opp.isBot && <Bot className="w-3 h-3 text-sky-500" />}
+                      {opp.isOnline ? (opp.isBot ? "Bot" : "Pemain") : "Terputus"}
                     </span>
                   )}
-
-                  {canTegur && (
-                    <button
-                      type="button"
-                      onClick={() => onTegurPlayer(opp.token)}
-                      className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-extrabold shadow-md animate-bounce hover:bg-rose-600 cursor-pointer"
-                    >
-                      Tegur!
-                    </button>
-                  )}
                 </div>
+
+                {/* Card count badge */}
+                <span
+                  title={`${opp.cardCount} kartu`}
+                  className={`shrink-0 min-w-[1.6rem] h-6 px-1.5 rounded-full flex items-center justify-center font-display font-bold text-xs ${
+                    opp.cardCount === 1
+                      ? "bg-rose-500 text-white animate-pulse"
+                      : "bg-slate-900 text-white dark:bg-white dark:text-slate-950"
+                  }`}
+                >
+                  {opp.cardCount}
+                </span>
+
+                {/* unoZ safe / Tegur — tucked under the chip */}
+                {opp.cardCount === 1 && opp.unozCalled ? (
+                  <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap px-1.5 py-px rounded-full bg-amber-400 text-slate-950 text-[9px] font-extrabold shadow">
+                    unoZ! Aman
+                  </span>
+                ) : canTegur ? (
+                  <button
+                    type="button"
+                    onClick={() => onTegurPlayer(opp.token)}
+                    className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-10 whitespace-nowrap px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-extrabold shadow-md animate-bounce hover:bg-rose-600 cursor-pointer"
+                  >
+                    Tegur!
+                  </button>
+                ) : null}
               </div>
             );
           })}

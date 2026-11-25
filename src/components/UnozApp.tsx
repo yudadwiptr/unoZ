@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, ExternalLink, Moon, Sun, Volume2, VolumeX } from "lucide-react";
+import { BookOpen, ExternalLink, LogOut, Moon, Sun, Volume2, VolumeX } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
@@ -11,6 +11,7 @@ import { HowToPlayModal } from "@/components/HowToPlayModal";
 import { LandingScreen } from "@/components/LandingScreen";
 import { LobbyScreen } from "@/components/LobbyScreen";
 import { useUnozGame } from "@/hooks/useUnozGame";
+import { MODE_LABEL } from "@/lib/constants";
 import { soundEngine } from "@/lib/sound";
 
 export function UnozApp() {
@@ -82,13 +83,20 @@ export function UnozApp() {
           game.screen === "lobby" ? "max-w-7xl" : game.screen === "landing" ? "max-w-6xl" : "max-w-5xl"
         }`}
       >
-        <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
-          {game.screen === "landing"
-            ? "Main Kartu Bareng Teman & Bot"
-            : game.screen === "lobby"
-            ? "Ruang Tunggu Lobby"
-            : "Meja Permainan unoZ"}
-        </div>
+        {game.screen === "game" && game.publicState ? (
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="px-2.5 py-1 rounded-xl glass-panel text-xs font-display font-bold tracking-wider text-slate-800 dark:text-slate-100">
+              #{game.publicState.roomCode}
+            </span>
+            <span className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-xl bg-slate-200/70 dark:bg-white/10 text-[11px] font-bold text-slate-600 dark:text-slate-300">
+              {MODE_LABEL[game.publicState.settings.mode] ?? "Klasik"}
+            </span>
+          </div>
+        ) : (
+          <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
+            {game.screen === "landing" ? "Main Kartu Bareng Teman & Bot" : "Ruang Tunggu Lobby"}
+          </div>
+        )}
 
         <div className="flex items-center gap-1.5">
           <button
@@ -132,6 +140,19 @@ export function UnozApp() {
               <Moon className="w-4 h-4 text-indigo-600" />
             )}
           </button>
+
+          {game.screen === "game" && (
+            <button
+              type="button"
+              onClick={game.backToLobby}
+              aria-label="Kembali ke Lobby"
+              title="Kembali ke Lobby"
+              className="inline-flex items-center gap-1 h-9 px-3 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 text-xs font-bold hover:bg-rose-500/25 active:scale-95 transition cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Lobby</span>
+            </button>
+          )}
         </div>
       </header>
 

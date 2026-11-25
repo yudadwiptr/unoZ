@@ -14,7 +14,7 @@ const PREVIEW: Card[] = [
 ];
 
 /** Grid of card-skin tiles, each previewing a little fan of cards in that skin. */
-export function SkinPicker({ layout = "grid" }: { layout?: "grid" | "row" }) {
+export function SkinPicker({ layout = "grid" }: { layout?: "grid" | "grid2" | "row" }) {
   const { skin, setSkin } = useCardSkin();
 
   return (
@@ -37,8 +37,10 @@ export function SkinPicker({ layout = "grid" }: { layout?: "grid" | "row" }) {
         aria-labelledby="skin-label"
         className={
           layout === "row"
-            ? "no-scrollbar -mx-1 px-1 flex gap-2.5 overflow-x-auto snap-x pb-1"
-            : "grid grid-cols-2 sm:grid-cols-4 gap-2.5"
+            ? "no-scrollbar -mx-1 px-1 pt-2 flex gap-2.5 overflow-x-auto snap-x pb-1"
+            : layout === "grid2"
+            ? "grid grid-cols-2 gap-3 pt-1.5"
+            : "grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1.5"
         }
       >
         {CARD_SKINS.map((meta) => {

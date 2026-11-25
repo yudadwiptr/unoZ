@@ -250,26 +250,6 @@ export function HowToPlayModal({ open, onClose }: HowToPlayModalProps) {
                   </p>
                 </div>
               </div>
-              <div className="p-3.5 rounded-2xl bg-slate-100/90 dark:bg-white/5 border border-slate-200/70 dark:border-white/10 space-y-1">
-                <h4 className="font-bold text-slate-900 dark:text-white">
-                  Aturan 7-0 (Tukar / Geser Kartu)
-                </h4>
-                <p className="text-xs leading-relaxed">
-                  Keluarin angka <strong>7</strong> untuk tukar seluruh kartumu dengan
-                  pemain pilihanmu. Keluarin angka <strong>0</strong> untuk menggeser
-                  kartu semua orang searah putaran giliran!
-                </p>
-              </div>
-              <div className="p-3.5 rounded-2xl bg-slate-100/90 dark:bg-white/5 border border-slate-200/70 dark:border-white/10 space-y-1">
-                <h4 className="font-bold text-slate-900 dark:text-white">
-                  Potong Giliran (Jump-In)
-                </h4>
-                <p className="text-xs leading-relaxed">
-                  Punya kartu dengan <strong>warna dan angka yang sama persis</strong>{" "}
-                  dengan kartu teratas di meja? Langsung ketuk saat muncul tanda{" "}
-                  <strong>Potong!</strong> meski bukan giliranmu!
-                </p>
-              </div>
             </div>
           )}
         </div>

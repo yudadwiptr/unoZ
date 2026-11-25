@@ -148,8 +148,10 @@ export function getNextTurnIndex(
 export function createInitialGameState(
   roomCode: string,
   players: PlayerInfo[],
-  settings: RoomSettings
+  rawSettings: RoomSettings
 ): FullGameState {
+  // 7-0 and Jump-In were removed from the game; ignore them even on older rooms
+  const settings: RoomSettings = { ...rawSettings, seven_zero: false, jump_in: false };
   const sortedPlayers = [...players].sort((a, b) => a.seatOrder - b.seatOrder);
   const deck = createDeck(settings.z_cards, !!settings.mega_draw);
   const hands: Record<string, Card[]> = {};

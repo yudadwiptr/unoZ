@@ -78,7 +78,7 @@ export function UnozApp() {
       {/* Global Minimal Utility Bar */}
       <header
         className={`w-full mx-auto px-4 pt-3 pb-1 flex items-center justify-between ${
-          game.screen === "lobby" ? "max-w-7xl" : "max-w-5xl"
+          game.screen === "lobby" ? "max-w-7xl" : game.screen === "landing" ? "max-w-6xl" : "max-w-5xl"
         }`}
       >
         <div className="text-xs font-bold text-slate-500 dark:text-slate-400">

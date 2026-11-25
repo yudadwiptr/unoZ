@@ -849,6 +849,7 @@ export function useUnozGame() {
       } else if (patch.mode === "super_chaos") {
         nextSettings = { ...DEFAULT_SUPER_CHAOS_SETTINGS };
       }
+      nextSettings = { ...nextSettings, seven_zero: false, jump_in: false };
 
       setRoom((prev) => (prev ? { ...prev, settings: nextSettings } : prev));
 

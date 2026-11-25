@@ -21,7 +21,18 @@ import { AvatarBadge } from "@/components/AvatarIcon";
 import { SkinPicker } from "@/components/SkinPicker";
 import { UnoCard } from "@/components/UnoCard";
 import { UnozLogo } from "@/components/UnozLogo";
+import {
+  DEFAULT_CHAOS_SETTINGS,
+  DEFAULT_KLASIK_SETTINGS,
+  DEFAULT_SUPER_CHAOS_SETTINGS,
+} from "@/lib/constants";
 import type { Card, GameMode, PlayerInfo, RoomSettings } from "@/types/game";
+
+const MODE_PRESETS: Record<GameMode, RoomSettings> = {
+  klasik: DEFAULT_KLASIK_SETTINGS,
+  chaos: DEFAULT_CHAOS_SETTINGS,
+  super_chaos: DEFAULT_SUPER_CHAOS_SETTINGS,
+};
 
 const MAX_PLAYERS = 8;
 
@@ -53,16 +64,6 @@ const RULE_TOGGLES: RuleToggleItem[] = [
     key: "stacking",
     label: "Tumpuk Kartu",
     desc: "Balas +2/+4 dengan kartu penambah yang sama atau lebih besar.",
-  },
-  {
-    key: "seven_zero",
-    label: "Aturan 7-0",
-    desc: "7 tukar kartu dengan pilihanmu, 0 geser kartu semua pemain.",
-  },
-  {
-    key: "jump_in",
-    label: "Potong Giliran",
-    desc: "Serobot giliran pakai kartu warna & angka yang persis sama.",
   },
   {
     key: "z_cards",
@@ -105,7 +106,7 @@ const MODE_OPTIONS: ModeOption[] = [
   {
     id: "chaos",
     title: "Chaos / Mabar",
-    desc: "Tumpuk, 7-0, potong giliran & Kartu Z.",
+    desc: "Tumpuk kartu + Kartu Spesial Z.",
     icon: <Flame className="w-4 h-4" />,
     cards: [
       { id: "mc1", color: "merah", value: "draw2" },
@@ -149,6 +150,8 @@ export function LobbyScreen({
   const canStart = players.length >= 2;
   const emptySeats = Math.max(0, MAX_PLAYERS - players.length);
   const activeMode = MODE_OPTIONS.find((m) => m.id === settings.mode) ?? MODE_OPTIONS[1];
+  const preset = MODE_PRESETS[settings.mode] ?? DEFAULT_CHAOS_SETTINGS;
+  const isCustom = RULE_TOGGLES.some((r) => !!settings[r.key] !== !!preset[r.key]);
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 lg:px-6 pt-3 pb-10 space-y-4 lg:space-y-5">
@@ -353,7 +356,12 @@ export function LobbyScreen({
                         : "border-transparent bg-slate-100/80 dark:bg-white/[0.04] hover:border-slate-300 dark:hover:border-white/15"
                     } ${isHost ? "cursor-pointer" : "cursor-default"}`}
                   >
-                    {mode.tag && (
+                    {active && isCustom && (
+                      <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-slate-900/80 dark:bg-white/90 text-white dark:text-slate-950 text-[9px] font-extrabold uppercase tracking-wider">
+                        Kustom
+                      </span>
+                    )}
+                    {mode.tag && !(active && isCustom) && (
                       <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-extrabold uppercase tracking-wider animate-pulse">
                         {mode.tag}
                       </span>
@@ -391,9 +399,14 @@ export function LobbyScreen({
 
           {/* House rules */}
           <div className="space-y-2">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Aturan Rumah
-            </span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Aturan Rumah
+              </span>
+              <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
+                {isCustom ? "Kustom • bebas nyalakan/matikan" : "Bebas nyalakan/matikan"}
+              </span>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
               {RULE_TOGGLES.map((rule) => {
                 const enabled = !!settings[rule.key];
@@ -404,12 +417,7 @@ export function LobbyScreen({
                     role="switch"
                     aria-checked={enabled}
                     disabled={!isHost}
-                    onClick={() =>
-                      onUpdateSettings({
-                        [rule.key]: !enabled,
-                        mode: !enabled && settings.mode === "klasik" ? "chaos" : settings.mode,
-                      })
-                    }
+                    onClick={() => onUpdateSettings({ [rule.key]: !enabled })}
                     className={`w-full flex items-center justify-between gap-3 p-3 rounded-2xl border-2 text-left transition ${
                       enabled
                         ? "bg-emerald-500/10 border-emerald-500/40"
@@ -464,7 +472,8 @@ export function LobbyScreen({
                     {canStart ? "Mulai Main" : "Minimal 2 Pemain"}
                   </span>
                   <span className="block text-[11px] font-bold text-slate-900/70">
-                    {activeMode.title} • {players.length} pemain siap
+                    {activeMode.title}
+                    {isCustom ? " (Kustom)" : ""} • {players.length} pemain siap
                   </span>
                 </span>
               </button>

@@ -56,8 +56,8 @@ export const RANDOM_NICKNAMES: string[] = [
 export const DEFAULT_CHAOS_SETTINGS: RoomSettings = {
   mode: "chaos",
   stacking: true,
-  seven_zero: true,
-  jump_in: true,
+  seven_zero: false,
+  jump_in: false,
   z_cards: true,
   mega_draw: false,
 };
@@ -74,8 +74,8 @@ export const DEFAULT_KLASIK_SETTINGS: RoomSettings = {
 export const DEFAULT_SUPER_CHAOS_SETTINGS: RoomSettings = {
   mode: "super_chaos",
   stacking: true,
-  seven_zero: true,
-  jump_in: true,
+  seven_zero: false,
+  jump_in: false,
   z_cards: true,
   mega_draw: true,
 };

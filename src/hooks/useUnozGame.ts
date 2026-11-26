@@ -27,6 +27,7 @@ import {
   getOrCreatePlayerToken,
   getSupabaseClient,
   isSupabaseConfigured,
+  openFreshChannel,
 } from "@/lib/supabase";
 import {
   addOnlineBotPlayer,
@@ -62,6 +63,21 @@ interface RoomContextState {
 
 const NICKNAME_KEY = "unoz_nickname";
 const AVATAR_KEY = "unoz_avatar";
+/** Room the player is currently in — lets a reloaded/backgrounded phone slide back in. */
+const ACTIVE_ROOM_KEY = "unoz_active_room";
+/** How long a human may be disconnected on their turn before the host auto-skips them. */
+const OFFLINE_SKIP_MS = 20000;
+/** Guests ask the host for a fresh snapshot if they hear nothing for this long. */
+const GUEST_RESYNC_MS = 6000;
+
+function rememberActiveRoom(code: string | null) {
+  try {
+    if (code) window.localStorage.setItem(ACTIVE_ROOM_KEY, code);
+    else window.localStorage.removeItem(ACTIVE_ROOM_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+}
 
 export function useUnozGame() {
   const [screen, setScreen] = useState<ScreenView>("landing");
@@ -75,7 +91,6 @@ export function useUnozGame() {
   const [emotes, setEmotes] = useState<EmoteBubble[]>([]);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isShaking, setIsShaking] = useState<boolean>(false);
-  const [onlineTokens, setOnlineTokens] = useState<Set<string>>(new Set());
 
   // Host holds authoritative full state in a ref + mirrored public state
   const fullStateRef = useRef<FullGameState | null>(null);
@@ -84,6 +99,14 @@ export function useUnozGame() {
   const handChannelsRef = useRef<Map<string, RealtimeChannel>>(new Map());
   const myHandChannelRef = useRef<RealtimeChannel | null>(null);
   const lastSoundEventIdRef = useRef<string | null>(null);
+  const onlineTokensRef = useRef<Set<string>>(new Set());
+  const lastStateAtRef = useRef<number>(0);
+  const screenRef = useRef<ScreenView>("landing");
+  const autoRejoinTriedRef = useRef(false);
+
+  useEffect(() => {
+    screenRef.current = screen;
+  }, [screen]);
 
   useEffect(() => {
     roomRef.current = room;
@@ -223,7 +246,7 @@ export function useUnozGame() {
         const channelName = `room:${activeRoom.roomCode}:hand:${player.token}`;
         let targetChan = handChannelsRef.current.get(player.token);
         if (!targetChan) {
-          targetChan = supabase.channel(channelName);
+          targetChan = openFreshChannel(supabase, channelName);
           handChannelsRef.current.set(player.token, targetChan);
           await new Promise<void>((resolve) => {
             targetChan!.subscribe((status) => {
@@ -325,7 +348,7 @@ export function useUnozGame() {
     const roomCode = room.roomCode;
     const isHostNow = room.hostToken === playerToken;
 
-    const channel = supabase.channel(`room:${roomCode}`, {
+    const channel = openFreshChannel(supabase, `room:${roomCode}`, {
       config: {
         presence: { key: playerToken },
         broadcast: { self: false },
@@ -339,7 +362,19 @@ export function useUnozGame() {
       const presenceState = channel.presenceState();
       const online = new Set<string>(Object.keys(presenceState));
       online.add(playerToken);
-      setOnlineTokens(online);
+      onlineTokensRef.current = online;
+
+      // Someone is here that our lobby list doesn't know yet (their join ping got lost) → refetch
+      const known = new Set((roomRef.current?.players ?? []).map((p) => p.token));
+      if ([...online].some((t) => !known.has(t))) {
+        void fetchOnlineRoomBundle(roomCode, online).then((refreshed) => {
+          if (refreshed) {
+            setRoom((prev) =>
+              prev ? { ...prev, settings: refreshed.room.settings, players: refreshed.players } : prev
+            );
+          }
+        });
+      }
 
       setRoom((prev) => {
         if (!prev) return prev;
@@ -366,7 +401,7 @@ export function useUnozGame() {
 
     // Public room sync (lobby updates, settings changes, player join/leave)
     channel.on("broadcast", { event: "ROOM_SYNC" }, async () => {
-      const refreshed = await fetchOnlineRoomBundle(roomCode, onlineTokens);
+      const refreshed = await fetchOnlineRoomBundle(roomCode, onlineTokensRef.current);
       if (refreshed) {
         setRoom((prev) =>
           prev
@@ -384,6 +419,7 @@ export function useUnozGame() {
     channel.on("broadcast", { event: "GAME_START" }, ({ payload }) => {
       const nextPub = payload?.state as PublicGameState | undefined;
       if (nextPub) {
+        lastStateAtRef.current = Date.now();
         setPublicState(nextPub);
         setScreen("game");
       }
@@ -392,9 +428,15 @@ export function useUnozGame() {
     channel.on("broadcast", { event: "PUBLIC_STATE" }, ({ payload }) => {
       const nextPub = payload?.state as PublicGameState | undefined;
       if (nextPub) {
-        setPublicState(nextPub);
+        lastStateAtRef.current = Date.now();
         if (nextPub.status === "waiting") {
+          setPublicState(null);
+          setMyHand([]);
           setScreen("lobby");
+        } else {
+          setPublicState(nextPub);
+          // Missed GAME_START while the connection was down → jump to the table now
+          if (screenRef.current !== "game") setScreen("game");
         }
       }
     });
@@ -475,20 +517,31 @@ export function useUnozGame() {
       channel.on("broadcast", { event: "REQUEST_SYNC" }, () => {
         if (fullStateRef.current) {
           void publishHostState(fullStateRef.current);
+        } else {
+          // In the lobby: make sure the (re)joining guest's lobby list is fresh
+          void channel.send({ type: "broadcast", event: "ROOM_SYNC", payload: { roomCode } });
         }
       });
     }
 
     // Subscribe to private per-player hand channel so other clients never see our hand
-    const handChannel = supabase.channel(`room:${roomCode}:hand:${playerToken}`);
+    const handChannel = openFreshChannel(supabase, `room:${roomCode}:hand:${playerToken}`);
     myHandChannelRef.current = handChannel;
     handChannel.on("broadcast", { event: "HAND_SYNC" }, ({ payload }) => {
       if (payload?.targetToken === playerToken && Array.isArray(payload?.hand)) {
         setMyHand(payload.hand as Card[]);
       }
     });
-    handChannel.subscribe();
+    // The hand channel must be live before we ask the host for a snapshot,
+    // otherwise the reply (our cards) is broadcast into the void.
+    const handReady = new Promise<void>((resolve) => {
+      handChannel.subscribe((status) => {
+        if (status === "SUBSCRIBED") resolve();
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") resolve();
+      });
+    });
 
+    // Fires on the first join AND on every automatic rejoin after a network drop
     channel.subscribe(async (status) => {
       if (status === "SUBSCRIBED") {
         await channel.track({
@@ -497,11 +550,20 @@ export function useUnozGame() {
           online_at: new Date().toISOString(),
         });
         if (!isHostNow) {
+          await handReady;
+          await channel.send({
+            type: "broadcast",
+            event: "ROOM_SYNC",
+            payload: { roomCode },
+          });
           await channel.send({
             type: "broadcast",
             event: "REQUEST_SYNC",
             payload: { requester: playerToken },
           });
+        } else if (fullStateRef.current) {
+          // Host came back from a drop: push the authoritative state to everyone again
+          void publishHostState(fullStateRef.current);
         }
       }
     });
@@ -602,7 +664,8 @@ export function useUnozGame() {
       return () => window.clearTimeout(timer);
     }
 
-    // If active player is a disconnected online human player, auto-skip after 4.5s
+    // If active player is a disconnected online human player, auto-skip after a generous grace
+    // period (mobile data hiccups shouldn't cost someone their turn)
     if (!activePlayer.isOnline && roomRef.current?.isOnlineRoom) {
       const timer = window.setTimeout(() => {
         const latest = fullStateRef.current;
@@ -615,7 +678,7 @@ export function useUnozGame() {
             forceAutoSkip: true,
           });
         }
-      }, 4500);
+      }, OFFLINE_SKIP_MS);
       return () => window.clearTimeout(timer);
     }
   }, [
@@ -720,6 +783,7 @@ export function useUnozGame() {
             players: res.data.players,
             isOnlineRoom: true,
           });
+          rememberActiveRoom(res.data.room.room_code);
           setScreen("lobby");
           pushToast(
             `Room online #${res.data.room.room_code} berhasil dibuat!`,
@@ -811,6 +875,21 @@ export function useUnozGame() {
           pushToast(res.error ?? "Gagal gabung room.", "danger");
           return;
         }
+        const rejoinAsHost = res.data.room.host_id === playerToken;
+        if (rejoinAsHost && res.data.room.status === "playing") {
+          // The host's page reloaded mid-game: the deck lived only in that tab, so reopen the lobby
+          await updateOnlineRoomStatus(res.data.room.id, "waiting");
+          res.data.room.status = "waiting";
+          window.setTimeout(() => {
+            void mainChannelRef.current?.send({
+              type: "broadcast",
+              event: "PUBLIC_STATE",
+              payload: { state: { status: "waiting" } },
+            });
+          }, 1500);
+          pushToast("Koneksi Ketua Room sempat putus — ronde diulang dari lobby.", "warning");
+        }
+        rememberActiveRoom(res.data.room.room_code);
         setRoom({
           roomId: res.data.room.id,
           roomCode: res.data.room.room_code,
@@ -820,7 +899,9 @@ export function useUnozGame() {
           isOnlineRoom: true,
         });
         setScreen(res.data.room.status === "playing" ? "game" : "lobby");
-        pushToast(`Berhasil gabung ke Room #${res.data.room.room_code}!`, "success");
+        if (!rejoinAsHost || res.data.room.status !== "waiting") {
+          pushToast(`Berhasil gabung ke Room #${res.data.room.room_code}!`, "success");
+        }
 
         // Notify everyone in the room to refresh lobby list
         window.setTimeout(() => {
@@ -902,7 +983,7 @@ export function useUnozGame() {
         seatOrder: nextSeat,
       });
       if (inserted) {
-        const refreshed = await fetchOnlineRoomBundle(room.roomCode, onlineTokens);
+        const refreshed = await fetchOnlineRoomBundle(room.roomCode, onlineTokensRef.current);
         if (refreshed) {
           setRoom((prev) => (prev ? { ...prev, players: refreshed.players } : prev));
         }
@@ -928,7 +1009,7 @@ export function useUnozGame() {
         prev ? { ...prev, players: [...prev.players, botPlayer] } : prev
       );
     }
-  }, [room, isHost, onlineTokens, pushToast]);
+  }, [room, isHost, pushToast]);
 
   const removeBot = useCallback(
     async (botToken: string) => {
@@ -962,6 +1043,7 @@ export function useUnozGame() {
       });
     }
     cleanupChannels();
+    rememberActiveRoom(null);
     fullStateRef.current = null;
     setPublicState(null);
     setMyHand([]);
@@ -1149,6 +1231,78 @@ export function useUnozGame() {
     setMyHand([]);
     setScreen("lobby");
   }, [isHost, room]);
+
+  // --- Network resilience ---
+
+  const requestResync = useCallback(() => {
+    const r = roomRef.current;
+    const chan = mainChannelRef.current;
+    if (!r?.isOnlineRoom || !chan) return;
+    if (r.hostToken === playerToken) {
+      if (fullStateRef.current) void publishHostState(fullStateRef.current);
+      return;
+    }
+    void chan.send({
+      type: "broadcast",
+      event: "REQUEST_SYNC",
+      payload: { requester: playerToken },
+    });
+  }, [playerToken, publishHostState]);
+
+  // Guest watchdog: if the table goes quiet (lost broadcast), ask the host for a snapshot
+  useEffect(() => {
+    if (!room?.isOnlineRoom || isHost || screen !== "game") return;
+    lastStateAtRef.current = Date.now();
+    const id = window.setInterval(() => {
+      if (Date.now() - lastStateAtRef.current > GUEST_RESYNC_MS) {
+        lastStateAtRef.current = Date.now();
+        requestResync();
+      }
+    }, 2000);
+    return () => window.clearInterval(id);
+  }, [room?.isOnlineRoom, isHost, screen, requestResync]);
+
+  // Phone woke up / network came back → resync right away instead of waiting
+  useEffect(() => {
+    if (!room?.isOnlineRoom) return;
+    const onWake = () => {
+      if (document.visibilityState === "visible") {
+        window.setTimeout(requestResync, 600);
+      }
+    };
+    document.addEventListener("visibilitychange", onWake);
+    window.addEventListener("online", onWake);
+    window.addEventListener("focus", onWake);
+    return () => {
+      document.removeEventListener("visibilitychange", onWake);
+      window.removeEventListener("online", onWake);
+      window.removeEventListener("focus", onWake);
+    };
+  }, [room?.isOnlineRoom, requestResync]);
+
+  // Page reloaded (mobile browsers do this when you switch apps) → slide back into the room
+  useEffect(() => {
+    if (autoRejoinTriedRef.current || !playerToken || !nickname || room || !isSupabaseConfigured) {
+      return;
+    }
+    const t = window.setTimeout(() => {
+      if (autoRejoinTriedRef.current) return;
+      autoRejoinTriedRef.current = true;
+      let saved: string | null = null;
+      try {
+        saved = window.localStorage.getItem(ACTIVE_ROOM_KEY);
+      } catch {
+        saved = null;
+      }
+      const invite = new URL(window.location.href).searchParams.get("room");
+      if (saved && (!invite || invite.trim().toUpperCase() === saved)) {
+        // Forget first: a successful join remembers it again, a dead room stays forgotten
+        rememberActiveRoom(null);
+        void joinRoom(saved);
+      }
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [playerToken, nickname, room, joinRoom]);
 
   const copyRoomLink = useCallback(async () => {
     if (!room) return;

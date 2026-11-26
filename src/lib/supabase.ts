@@ -25,10 +25,35 @@ export function getSupabaseClient(): SupabaseClient | null {
         params: {
           eventsPerSecond: 15,
         },
+        // Keep the heartbeat alive in a Web Worker so phones that background the
+        // tab (or throttle timers on a weak network) don't silently drop the socket.
+        worker: true,
+        heartbeatIntervalMs: 15000,
       },
     });
   }
   return cachedClient;
+}
+
+/**
+ * Open a Realtime channel, evicting any stale channel with the same topic first.
+ * supabase-js reuses an existing channel for a topic until the server confirms the
+ * previous leave — on a slow network that is seconds, and adding listeners to that
+ * half-closed channel throws, which left rejoining players with no connection at all.
+ */
+export function openFreshChannel(
+  client: SupabaseClient,
+  topic: string,
+  config?: Parameters<SupabaseClient["channel"]>[1]
+) {
+  const fullTopic = `realtime:${topic}`;
+  for (const stale of client.getChannels()) {
+    if (stale.topic === fullTopic) {
+      void client.removeChannel(stale);
+      (client.realtime as unknown as { _remove?: (c: unknown) => void })._remove?.(stale);
+    }
+  }
+  return client.channel(topic, config);
 }
 
 const TOKEN_STORAGE_KEY = "unoz_player_token";
